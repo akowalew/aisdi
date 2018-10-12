@@ -1,22 +1,19 @@
-#include <iostream>
-
-#include <cassert>
+#define CATCH_CONFIG_MAIN
+#include "catch2/catch.hpp"
 
 #include "aisdi/Car.hpp"
 
-int main()
-{
+TEST_CASE( "Car's acceleration will be tested", "[accelerate]" ) {
 	using namespace aisdi;
 
 	const auto fuel = 100;
 	auto car = Car{fuel};
-	assert(!car.empty());
+	REQUIRE(!car.empty());
 
 	const auto speed = 25;
 	car.accelerate(speed);
 	car.accelerate(speed);
 	car.accelerate(speed);
 	car.accelerate(speed);
-	assert(car.empty());
+	REQUIRE(car.empty());
 }
-

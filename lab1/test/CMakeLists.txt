@@ -1,4 +1,3 @@
-# creates the executable
 add_executable(Car-test 
 	Car-test.cpp
 )
@@ -8,11 +7,9 @@ target_compile_features(Car-test
 		cxx_auto_type
 )
 
-# indicates the link paths
 target_link_libraries(Car-test
-	PRIVATE
 		aisdi_lab1
+		Catch2::Catch2
 )
 
-# declares a test with our executable
 add_test(NAME Car-test COMMAND Car-test)
