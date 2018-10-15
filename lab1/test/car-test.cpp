@@ -1,9 +1,9 @@
-#define CATCH_CONFIG_MAIN
 #include "catch2/catch.hpp"
 
 #include "aisdi/Car.hpp"
 
-TEST_CASE( "Car's acceleration will be tested", "[accelerate]" ) {
+TEST_CASE("Car's acceleration will be tested", "[accelerate]")
+{
 	using namespace aisdi;
 
 	const auto fuel = 100;

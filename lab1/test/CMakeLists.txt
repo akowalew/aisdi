@@ -1,15 +1,20 @@
-add_executable(Car-test 
-	Car-test.cpp
+add_executable(lab1_tests
+	car-test.cpp
+	segfault-test.cpp
+	memleak-test.cpp
+
+	tests-main.cpp
 )
 
-target_compile_features(Car-test
+target_link_libraries(lab1_tests
 	PRIVATE
-		cxx_auto_type
-)
-
-target_link_libraries(Car-test
-		aisdi_lab1
+		lab1
 		Catch2::Catch2
 )
 
-add_test(NAME Car-test COMMAND Car-test)
+target_compile_options(lab1_tests
+	PRIVATE
+		-std=c++17
+)
+
+add_test(NAME lab1_tests COMMAND lab1_tests)
