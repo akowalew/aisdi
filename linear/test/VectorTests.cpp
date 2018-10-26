@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_CASE(DefaultConstructedVectorShouldBeEmpty)
 {
 	using namespace aisdi;
 	
-	Vector<int> vector;
+	const auto vector = Vector<int>{};
 
     BOOST_CHECK(vector.empty());
 }

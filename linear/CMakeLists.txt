@@ -17,6 +17,9 @@ target_include_directories(aisdi_linear
 target_compile_options(aisdi_linear
 	INTERFACE
 		-std=c++14
+		-Wall
+		-Wextra
+		-pedantic
 )
 
 if(BUILD_TESTS)

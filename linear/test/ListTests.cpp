@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_CASE(DefaultConstructedListShouldBeEmpty)
 {
 	using namespace aisdi;
 	
-	List<int> list;
+	const auto list = List<int>{};
 
     BOOST_CHECK(list.empty());
 }
