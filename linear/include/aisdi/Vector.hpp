@@ -73,13 +73,14 @@ public:
 	pointer
 	data() noexcept
 	{
-		// NOTE: it may return nullptr in case of empty container
+		// NOTE: it may return nullptr in case of empty or moved-out container
 		return _buffer.get();
 	}
 
 	const_pointer
 	data() const noexcept
 	{
+		// NOTE: it may return nullptr in case of empty or moved-out container
 		return _buffer.get();
 	}
 
@@ -88,6 +89,7 @@ public:
 	{
 		// Preconditions
 		assert(pos < _size);
+		assert(_buffer);
 
 		return _buffer[pos];
 	}
@@ -97,6 +99,7 @@ public:
 	{
 		// Preconditions
 		assert(pos < _size);
+		assert(_buffer);
 
 		return _buffer[pos];
 	}
@@ -115,13 +118,53 @@ public:
 			std::copy(_buffer.get(), _buffer.get() + _size, 
 				newBuffer.get());
 
+			// Append desired element at the end of new buffer
+			newBuffer[_size] = item;
+
+			// Switch into new buffer
+			_buffer = std::move(newBuffer);
+			_capacity = newCapacity;
+		}
+		else
+		{
+			// Buffer is big enough to hold new item
+			// Append desired element at the end
+			assert(_buffer);
+			_buffer[_size] = item;
+		}
+
+		_size = newSize;
+	}
+
+	void
+	prepend(const T& item)
+	{	
+		const auto newSize = (_size + 1);
+		if(newSize > _capacity)
+		{
+			// There is no space in current buffer. Make a new one, larger.
+			const auto newCapacity = (newSize * Multiplier);
+			auto newBuffer = std::make_unique<T[]>(newCapacity);
+
+			// Copy current data into new buffer from the second position
+			std::copy(_buffer.get(), _buffer.get() + _size, 
+				newBuffer.get() + 1);
+
+			// Prepend desired element to the begin
+			newBuffer[0] = item;
+
 			// Switch into new buffer and change capacity
 			_buffer = std::move(newBuffer);
 			_capacity = newCapacity;
 		}
+		else
+		{
+			// Buffer is big enough to hold new item
+			// Prepend desired element to the begin
+			assert(_buffer);
+			_buffer[0] = item;
+		}
 
-		// Append desired element at the end and change size
-		_buffer[_size] = item;
 		_size = newSize;
 	}
 

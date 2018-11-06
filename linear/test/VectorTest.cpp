@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ShouldBeEqualWithItself, T, TestTypes)
 		const auto vector = aisdi::Vector<T>{};
 
 		BOOST_CHECK(vector == vector);
-		BOOST_CHECK(!(vector == vector));
+		BOOST_CHECK(!(vector != vector));
 	}
 }
 
@@ -136,24 +136,74 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(EqualityShouldBeCommutative, T, TestTypes)
 	BOOST_CHECK(!(vector2 == vector1));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(AppendShouldIncrementSize, T, TestTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(AppendShouldIncreaseSize, T, TestTypes)
 {
-	auto vector = aisdi::Vector<T>{};
+	auto vector = aisdi::Vector<T>{1, 2, 3};
 	const auto previousSize = vector.size();
 
-	vector.append(T{}); // append dummy item
+	const auto item = T{4};
+	vector.append(item);
 
 	BOOST_CHECK(vector.size() == (previousSize + 1));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(AppendedItemShouldBeSame, T, TestTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(AppendedItemShouldBeAtTheEnd, T, TestTypes)
 {
-	auto vector = aisdi::Vector<T>{};
+	auto vector = aisdi::Vector<T>{1, 2, 3};
 
-	const auto item = T{0xAB};
+	const auto item = T{4};
 	vector.append(item); // append dummy item
 
 	BOOST_CHECK(vector[vector.size() - 1] == item);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(AppendedShouldNotModifyCurrentItems, T, TestTypes)
+{
+	const auto pattern = aisdi::Vector<T>{1, 2, 3};
+	auto vector = pattern;
+
+	const auto item = T{4};
+	vector.append(item); // append dummy item
+
+	for(std::size_t i = 0; i < pattern.size(); ++i)
+	{
+		BOOST_CHECK(vector[i] == pattern[i]);
+	}
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(PrependShouldIncrementSize, T, TestTypes)
+{
+	auto vector = aisdi::Vector<T>{1, 2, 3};
+	const auto previousSize = vector.size();
+
+	const auto item = T{4};
+	vector.prepend(item);
+
+	BOOST_CHECK(vector.size() == (previousSize + 1));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(PrependedItemShouldBeAtTheBegin, T, TestTypes)
+{
+	auto vector = aisdi::Vector<T>{1, 2, 3};
+
+	const auto item = T{4};
+	vector.prepend(item); // append dummy item
+
+	BOOST_CHECK(vector[0] == item);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(PrependShouldNotModifyCurrentItems, T, TestTypes)
+{
+	const auto pattern = aisdi::Vector<T>{1, 2, 3};
+	auto vector = pattern;
+
+	const auto item = T{4};
+	vector.prepend(item); // append dummy item
+
+	for(std::size_t i = 0; i < pattern.size(); ++i)
+	{
+		BOOST_CHECK(vector[i + 1] == pattern[i]);
+	}
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IfSizeZeroThanShouldBeEmpty, T, TestTypes)
