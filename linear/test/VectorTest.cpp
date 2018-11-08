@@ -286,54 +286,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	BOOST_CHECK(std::equal(il.begin(), il.end(), std::next(vector.begin())));
 }
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(
-// 	GivenEmptyContainer_WhenPoppingBack_ThenExceptionIsThrown,
-// 	T, TestTypes)
-// {
-// 	// ...
-// }
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(
-	GivenContainer_WhenPoppingBack_ThenLastItemIsRemovedAndReturned,
-	T, TestTypes)
-{
-	const auto il = {T{1}, T{2}, T{3}};
-	const auto lastItem = *std::rbegin(il);
-
-	auto vector = aisdi::Vector<T>{il};
-	const auto previousSize = vector.size();
-
-	const auto item = vector.popBack();
-
-	BOOST_CHECK(vector.size() == (previousSize - 1));
-	BOOST_CHECK(item == lastItem);
-	BOOST_CHECK(std::equal(vector.begin(), vector.end(), il.begin()));
-}
-
-// BOOST_AUTO_TEST_CASE_TEMPLATE(
-// 	GivenEmptyContainer_WhenPoppingFront_ThenExceptionIsThrown,
-// 	T, TestTypes)
-// {
-// 	// ...
-// }
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(
-	GivenContainer_WhenPoppingFront_ThenFirstItemIsRemovedAndReturned,
-	T, TestTypes)
-{
-	const auto il = {T{1}, T{2}, T{3}};
-	const auto firstItem = *std::begin(il);
-
-	auto vector = aisdi::Vector<T>{il};
-	const auto previousSize = vector.size();
-
-	const auto item = vector.popFront();
-
-	BOOST_CHECK(vector.size() == (previousSize - 1));
-	BOOST_CHECK(item == firstItem);
-	BOOST_CHECK(std::equal(vector.begin(), vector.end(), std::next(il.begin())));
-}
-
 BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenEmptyContainer_WhenInsertingAtBegin_ThenItemIsPrepended,
 	T, TestTypes)
@@ -418,4 +370,232 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	BOOST_CHECK(newPos == std::prev(vector.end()));
 	BOOST_CHECK(*newPos == item);
 	BOOST_CHECK(std::equal(vector.begin(), newPos, il.begin()));
+}
+
+// BOOST_AUTO_TEST_CASE_TEMPLATE(
+// 	GivenEmptyContainer_WhenPoppingBack_ThenExceptionIsThrown,
+// 	T, TestTypes)
+// {
+// 	// ...
+// }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenPoppingBack_ThenLastItemIsRemovedAndReturned,
+	T, TestTypes)
+{
+	const auto il = {T{1}, T{2}, T{3}};
+	const auto lastItem = *std::rbegin(il);
+
+	auto vector = aisdi::Vector<T>{il};
+	const auto previousSize = vector.size();
+
+	const auto item = vector.popBack();
+
+	// TODO: Add check about call count to destructor (prove destroing)
+
+	BOOST_CHECK(vector.size() == (previousSize - 1));
+	BOOST_CHECK(item == lastItem);
+	BOOST_CHECK(std::equal(vector.begin(), vector.end(), il.begin()));
+}
+
+// BOOST_AUTO_TEST_CASE_TEMPLATE(
+// 	GivenEmptyContainer_WhenPoppingFront_ThenExceptionIsThrown,
+// 	T, TestTypes)
+// {
+// 	// ...
+// }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenPoppingFront_ThenFirstItemIsRemovedAndReturned,
+	T, TestTypes)
+{
+	const auto il = {T{1}, T{2}, T{3}};
+	const auto firstItem = *std::begin(il);
+
+	auto vector = aisdi::Vector<T>{il};
+	const auto previousSize = vector.size();
+
+	const auto item = vector.popFront();
+
+	// TODO: Add check about call count to destructor (prove destroing)
+
+	BOOST_CHECK(vector.size() == (previousSize - 1));
+	BOOST_CHECK(item == firstItem);
+	BOOST_CHECK(std::equal(vector.begin(), vector.end(), std::next(il.begin())));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenAnyContainer_WhenFirstEqualsLast_ThenNothingHappens,
+	T, TestTypes)
+{
+	{
+		auto vector = aisdi::Vector<T>{};
+
+		const auto first = vector.begin();
+		const auto last = first;
+		vector.erase(first, last);
+
+		BOOST_CHECK(vector.empty());
+	}
+
+	{
+		auto vector = aisdi::Vector<T>{};
+
+		const auto first = vector.begin() - 100;
+		const auto last = first;
+		vector.erase(first, last);
+
+		BOOST_CHECK(vector.empty());
+	}
+
+	{
+		const auto vector1 = aisdi::Vector<T>{1, 2, 3};
+		auto vector2 = vector1;
+
+		const auto first = vector2.begin();
+		const auto last = first;
+		vector2.erase(first, last);
+
+		BOOST_CHECK(vector2 == vector1);
+	}
+
+	{
+		const auto vector1 = aisdi::Vector<T>{1, 2, 3};
+		auto vector2 = vector1;
+
+		const auto first = vector2.begin() - 100;
+		const auto last = first;
+		vector2.erase(first, last);
+
+		BOOST_CHECK(vector2 == vector1);
+	}
+}
+
+// BOOST_AUTO_TEST_CASE_TEMPLATE(
+// 	GivenEmptyContainer_WhenErasingAnything_ThenExceptionIsThrown,
+// 	T, TestTypes)
+// {
+// 	// ...
+// }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenErasingFirstItem_ThenItIsPoppedFromFront,
+	T, TestTypes)
+{
+	const auto il = {T{1}, T{2}, T{3}};
+	auto vector = aisdi::Vector<T>{il};
+
+	const auto first = vector.begin();
+	const auto last = std::next(first);
+	const auto afterLastRemoved = vector.erase(first, last);
+
+	BOOST_CHECK(afterLastRemoved == vector.begin());
+	BOOST_CHECK(vector.size() == (il.size() - 1));
+	BOOST_CHECK(std::equal(vector.begin(), vector.end(), std::next(il.begin())));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenErasingAtBeginning_ThenItemsAreRemovedFromFront,
+	T, TestTypes)
+{
+	const auto il = {T{1}, T{2}, T{3}};
+	auto vector = aisdi::Vector<T>{il};
+
+	const auto count = 2;
+	const auto first = vector.begin();
+	const auto last = (first + count);
+	const auto afterLastRemoved = vector.erase(first, last);
+
+	BOOST_CHECK(afterLastRemoved == vector.begin());
+	BOOST_CHECK(vector.size() == (il.size() - count));
+	BOOST_CHECK(std::equal(vector.begin(), vector.end(), il.begin() + count));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenErasingLastItem_ThenItIsPoppedFromBack,
+	T, TestTypes)
+{
+	const auto il = {T{1}, T{2}, T{3}};
+	auto vector = aisdi::Vector<T>{il};
+
+	const auto last = vector.end();
+	const auto first = std::prev(last);
+	const auto afterLastRemoved = vector.erase(first, last);
+
+	BOOST_CHECK(afterLastRemoved == vector.end());
+	BOOST_CHECK(vector.size() == (il.size() - 1));
+	BOOST_CHECK(std::equal(il.begin(), std::prev(il.end()), vector.begin()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenErasingAtEnd_ThenItemsAreRemovedFromBack,
+	T, TestTypes)
+{
+	const auto il = {T{1}, T{2}, T{3}};
+	auto vector = aisdi::Vector<T>{il};
+
+	const auto count = 2;
+	const auto last = vector.end();
+	const auto first = (last - count);
+	const auto afterLastRemoved = vector.erase(first, last);
+
+	BOOST_CHECK(afterLastRemoved == vector.end());
+	BOOST_CHECK(vector.size() == (il.size() - count));
+	BOOST_CHECK(std::equal(il.begin(), il.end() - count, vector.begin()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenErasingOneInMiddle_ThenItemIsRemoved,
+	T, TestTypes)
+{
+	const auto il = {T{1}, T{2}, T{3}};
+	auto vector = aisdi::Vector<T>{il};
+
+	const auto shift = 1;
+	const auto first = (vector.begin() + shift);
+	const auto last = std::next(first);
+	const auto afterLastRemoved = vector.erase(first, last);
+
+	BOOST_CHECK(afterLastRemoved == (vector.begin() + shift));
+	BOOST_CHECK(vector.size() == (il.size() - 1));
+	BOOST_CHECK(std::equal(vector.begin(), vector.begin() + shift,
+		il.begin()));
+	BOOST_CHECK(std::equal(vector.begin() + shift + 1, vector.end(),
+		il.begin() + shift + 1));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenErasingInMiddle_ThenItemsAreRemoved,
+	T, TestTypes)
+{
+	const auto il = {T{1}, T{2}, T{3}, T{4}, T{5}};
+	auto vector = aisdi::Vector<T>{il};
+
+	const auto shift = 1;
+	const auto count = 2;
+	const auto first = (vector.begin() + shift);
+	const auto last = (first + count);
+	const auto afterLastRemoved = vector.erase(first, last);
+
+	BOOST_CHECK(afterLastRemoved == (vector.begin() + shift));
+	BOOST_CHECK(vector.size() == (il.size() - count));
+	BOOST_CHECK(std::equal(vector.begin(), vector.begin() + shift,
+		il.begin()));
+	BOOST_CHECK(std::equal(vector.begin() + shift + count, vector.end(),
+		il.begin() + shift + count));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenErasingFromBeginToEnd_ThenItIsEmpty,
+	T, TestTypes)
+{
+	const auto il = {T{1}, T{2}, T{3}};
+	auto vector = aisdi::Vector<T>{il};
+
+	const auto first = vector.begin();
+	const auto last = vector.end();
+	const auto afterLastRemoved = vector.erase(first, last);
+
+	BOOST_CHECK(afterLastRemoved == vector.end());
+	BOOST_CHECK(vector.empty());
 }

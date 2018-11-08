@@ -6,6 +6,8 @@
 #include <initializer_list>
 #include <iterator>
 
+#include "aisdi/util.hpp"
+
 namespace aisdi {
 
 template<typename T>
@@ -173,89 +175,55 @@ public:
 	}
 
 	reference
-	operator[](size_type pos)
+	front()
 	{
 		// Preconditions
-		assert(pos < _size);
+		assert(_size > 0);
 		assert(_buffer);
 
-		return _buffer[pos];
+		return _buffer[0];
 	}
 
 	const_reference
-	operator[](size_type pos) const
+	front() const
+	{
+		return const_cast<Vector*>(this)->front();
+	}
+
+	reference
+	back()
 	{
 		// Preconditions
-		assert(pos < _size);
+		assert(_size > 0);
 		assert(_buffer);
 
-		return _buffer[pos];
+		return _buffer[_size - 1];
+	}
+
+	const_reference
+	back() const
+	{
+		return const_cast<Vector*>(this)->back();
 	}
 
 	void
 	append(const T& item)
 	{
-		// NOTE: Basic exception safety
-
-		const auto newSize = (_size + 1);
-		if(newSize > _capacity)
-		{
-			const auto newCapacity = (newSize * Multiplier);
-			auto newBuffer = std::make_unique<T[]>(newCapacity);
-
-			const auto appendPos = std::copy(begin(), end(), newBuffer.get());
-			*appendPos = item;
-
-			_buffer = std::move(newBuffer);
-			_capacity = newCapacity;
-		}
-		else
-		{
-			// Preconditions
-			assert(_buffer);
-
-			_buffer[_size] = item;
-		}
-
-		_size = newSize;
+		insert(end(), item);
 	}
 
 	void
 	prepend(const T& item)
 	{
-		// NOTE: Basic exception safety
-
-		const auto newSize = (_size + 1);
-		if(newSize > _capacity)
-		{
-			// There is no space in current buffer. Make a new one, larger.
-			const auto newCapacity = (newSize * Multiplier);
-			auto newBuffer = std::make_unique<T[]>(newCapacity);
-
-			std::copy(begin(), end(), std::next(newBuffer.get()));
-			newBuffer[0] = item;
-
-			// Switch into new buffer and change capacity
-			_buffer = std::move(newBuffer);
-			_capacity = newCapacity;
-		}
-		else
-		{
-			// Preconditions
-			assert(_buffer);
-
-			_buffer[0] = item;
-		}
-
-		_size = newSize;
+		insert(begin(), item);
 	}
 
 	iterator
 	insert(const_iterator pos, const T& value)
 	{
 		// Preconditions
-		assert(std::distance(cbegin(), pos) + std::distance(pos, cend())
-			== std::distance(cbegin(), cend()));
+		assert(std::distance(cbegin(), pos) >= 0
+			&& std::distance(pos, cend()) >= 0);
 
 		// NOTE: Basic exception safety
 
@@ -295,14 +263,17 @@ public:
 	T
 	popBack()
 	{
+		// NOTE: Basic exception safety
 		// Preconditions
 		assert(_size > 0);
-		assert(_buffer);
 
-		// NOTE: Basic exception safety
+		const auto result = back();
 
-		--_size;
-		return _buffer[_size];
+		const auto last = cend();
+		const auto first = std::prev(last);
+		erase(first, last);
+
+		return result;
 	}
 
 	T
@@ -311,18 +282,21 @@ public:
 		// NOTE: Basic exception safety
 		// Preconditions
 		assert(_size > 0);
-		assert(_buffer);
 
-		const auto result = _buffer[0];
+		const auto result = front();
 
-		// Shift items from right to left by one
-		for(auto it = begin(); it != std::prev(end()); ++it)
-		{
-			*it = *std::next(it);
-		}
+		const auto first = cbegin();
+		const auto last = std::next(first);
+		erase(first, last);
 
-		--_size;
 		return result;
+	}
+
+	iterator
+	erase(const_iterator first, const_iterator last)
+	{
+		return eraseImpl(const_cast<iterator>(first),
+			const_cast<iterator>(last));
 	}
 
 	size_type
@@ -338,6 +312,30 @@ public:
 	}
 
 private:
+	iterator
+	eraseImpl(iterator first, iterator last)
+	{
+		if(first == last)
+		{
+			return last;
+		}
+
+		// NOTE: Basic exception safety
+		// Preconditions
+		assert(std::distance(begin(), first) >= 0
+			&& std::distance(first, end()) >= 0);
+		assert(std::distance(begin(), last) >= 0
+			&& std::distance(last, end()) >= 0);
+		assert(std::distance(first, last) >= 0);
+
+		const auto afterLastCopied = std::copy(last, end(), first);
+		util::destroy(afterLastCopied, end());
+
+		_size -= std::distance(first, last);
+
+		return first;
+	}
+
 	std::unique_ptr<T[]> _buffer;
 	size_type _size = 0;
 	size_type _capacity = 0;
