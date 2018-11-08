@@ -193,13 +193,11 @@ public:
 	T
 	popFront()
 	{
+		// NOTE: Basic exception safety
 		// Preconditions
 		assert(_size > 0);
 		assert(_buffer);
 
-		// NOTE: Basic exception safety
-
-		// Copy the first item as a result
 		const auto result = _buffer[0];
 
 		// Shift items from right to left by one
@@ -221,21 +219,16 @@ public:
 			// There is no space in current buffer. Make a new one, larger.
 			const auto newCapacity = (newSize * Multiplier);
 			auto newBuffer = std::make_unique<T[]>(newCapacity);
-
-			// Copy current data into new buffer
 			std::copy(begin(), end(), newBuffer.get());
 
-			// Append desired element at the end of new buffer
 			newBuffer[_size] = item;
 
-			// Switch into new buffer
 			_buffer = std::move(newBuffer);
 			_capacity = newCapacity;
 		}
 		else
 		{
 			// Buffer is big enough to hold new item
-			// Append desired element at the end
 			assert(_buffer);
 			_buffer[_size] = item;
 		}
@@ -252,11 +245,8 @@ public:
 			// There is no space in current buffer. Make a new one, larger.
 			const auto newCapacity = (newSize * Multiplier);
 			auto newBuffer = std::make_unique<T[]>(newCapacity);
+			std::copy(begin(), end(), std::next(newBuffer.get()));
 
-			// Copy current data into new buffer from the second position
-			std::copy(begin(), end(), newBuffer.get() + 1);
-
-			// Prepend desired element to the begin
 			newBuffer[0] = item;
 
 			// Switch into new buffer and change capacity
@@ -266,7 +256,6 @@ public:
 		else
 		{
 			// Buffer is big enough to hold new item
-			// Prepend desired element to the begin
 			assert(_buffer);
 			_buffer[0] = item;
 		}

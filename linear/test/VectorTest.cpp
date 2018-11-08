@@ -196,86 +196,114 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(AppendShouldNotModifyCurrentItems, T, TestTypes)
 			vector.data()));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IfSizeZeroThanShouldBeEmpty, T, TestTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenEmpty_SizeShouldBeZero, T, TestTypes)
 {
 	const auto vector = aisdi::Vector<T>{};
 
 	BOOST_CHECK(vector.size() == 0);
-	BOOST_CHECK(vector.empty());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IfSizeNotZeroThanShouldNotBeEmpty, T, TestTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenNotEmpty_SizeShouldNotBeZero, T, TestTypes)
 {
 	auto vector = aisdi::Vector<T>{1, 2, 3};
 
 	BOOST_CHECK(vector.size() != 0);
-	BOOST_CHECK(!vector.empty());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ShouldBeEqualWithItself, T, TestTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenEmpty_ShouldBeEqualWithItself, T, TestTypes)
 {
-	{
-		const auto vector = aisdi::Vector<T>{1, 2, 3, 4, 5};
-	
-		BOOST_CHECK(vector == vector);
-		BOOST_CHECK(!(vector != vector));
-	}
+	const auto vector = aisdi::Vector<T>{};
 
-	{
-		const auto vector = aisdi::Vector<T>{};
-
-		BOOST_CHECK(vector == vector);
-		BOOST_CHECK(!(vector != vector));
-	}
+	BOOST_CHECK(vector == vector);
+	BOOST_CHECK(!(vector != vector));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ShouldBeEqualWhenSameItems, T, TestTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenNotEmpty_ShouldBeEqualWithItself, T, TestTypes)
 {
-	const auto vector1 = aisdi::Vector<T>{1, 2, 3, 4, 5};
-	const auto vector2 = vector1;
+	const auto vector = aisdi::Vector<T>{1, 2, 3, 4, 5};
+
+	BOOST_CHECK(vector == vector);
+	BOOST_CHECK(!(vector != vector));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenBothEmpty_ShouldBeEqual, T, TestTypes)
+{
+	const auto vector1 = aisdi::Vector<T>{};
+	const auto vector2 = aisdi::Vector<T>{};
 
 	BOOST_CHECK(vector1 == vector2);
 	BOOST_CHECK(!(vector1 != vector2));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ShouldNotBeEqualWhenVariousItems, T, TestTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenSameItems_ShouldBeEqual, T, TestTypes)
 {
-	{
-		const auto vector1 = aisdi::Vector<T>{1, 2, 3, 4, 5};
-		const auto vector2 = aisdi::Vector<T>{6, 7, 8, 9, 10};
+	const auto vector1 = aisdi::Vector<T>{1, 2, 3, 4, 5};
+	const auto vector2 = aisdi::Vector<T>{1, 2, 3, 4, 5};
 
-		BOOST_CHECK(vector1 != vector2);
-		BOOST_CHECK(!(vector1 == vector2));
-	}
-
-	{
-		const auto vector1 = aisdi::Vector<T>{1, 2, 3, 4, 5};
-		const auto vector2 = aisdi::Vector<T>{};
-	
-		BOOST_CHECK(vector1 != vector2);
-		BOOST_CHECK(!(vector1 == vector2));	
-	}
+	BOOST_CHECK(vector1 == vector2);
+	BOOST_CHECK(!(vector1 != vector2));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ShouldNotBeEqualWhenVariousSizes, T, TestTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenVariousSizes_ShouldNotBeEqual, T, TestTypes)
 {
 	const auto vector1 = aisdi::Vector<T>{1, 2, 3, 4, 5};
 	const auto vector2 = aisdi::Vector<T>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-	BOOST_CHECK(vector1.size() != vector2.size());
-	BOOST_CHECK(vector1 != vector2);
 	BOOST_CHECK(!(vector1 == vector2));
+	BOOST_CHECK(vector1 != vector2);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(EqualityShouldBeCommutative, T, TestTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenVariousItems_ShouldNotBeEqual, T, TestTypes)
 {
 	const auto vector1 = aisdi::Vector<T>{1, 2, 3, 4, 5};
 	const auto vector2 = aisdi::Vector<T>{6, 7, 8, 9, 10};
 
+	BOOST_CHECK(!(vector1 == vector2));
 	BOOST_CHECK(vector1 != vector2);
-	BOOST_CHECK(vector2 != vector1);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenBothEmpty_EqualityShouldBeCommutative, T, TestTypes)
+{
+	const auto vector1 = aisdi::Vector<T>{};
+	const auto vector2 = aisdi::Vector<T>{};
+
+	BOOST_CHECK(vector1 == vector2);
+	BOOST_CHECK(vector2 == vector1);
+	BOOST_CHECK(!(vector1 != vector2));
+	BOOST_CHECK(!(vector2 != vector1));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenSameItems_EqualityShouldBeCommutative, T, TestTypes)
+{
+	const auto vector1 = aisdi::Vector<T>{1, 2, 3, 4, 5};
+	const auto vector2 = aisdi::Vector<T>{1, 2, 3, 4, 5};
+
+	BOOST_CHECK(vector1 == vector2);
+	BOOST_CHECK(vector2 == vector1);
+	BOOST_CHECK(!(vector1 != vector2));
+	BOOST_CHECK(!(vector2 != vector1));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenVariousSizes_NotEqualityShouldBeCommutative, T, TestTypes)
+{
+	const auto vector1 = aisdi::Vector<T>{1, 2, 3, 4, 5};
+	const auto vector2 = aisdi::Vector<T>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
 	BOOST_CHECK(!(vector1 == vector2));
 	BOOST_CHECK(!(vector2 == vector1));
+	BOOST_CHECK(vector1 != vector2);
+	BOOST_CHECK(vector2 != vector1);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(WhenVariousItems_NotEqualityShouldBeCommutative, T, TestTypes)
+{
+	const auto vector1 = aisdi::Vector<T>{1, 2, 3, 4, 5};
+	const auto vector2 = aisdi::Vector<T>{6, 7, 8, 9, 10};
+
+	BOOST_CHECK(!(vector1 == vector2));
+	BOOST_CHECK(!(vector2 == vector1));
+	BOOST_CHECK(vector1 != vector2);
+	BOOST_CHECK(vector2 != vector1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(PopBackShouldDecrementSize, T, TestTypes)
