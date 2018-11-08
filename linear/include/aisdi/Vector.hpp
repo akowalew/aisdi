@@ -21,33 +21,12 @@ public:
 	using const_pointer = const T*;
 	using iterator = T*;
 	using const_iterator = const T*;
+	using reverse_iterator = std::reverse_iterator<iterator>;
+	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 	using size_type = std::size_t;
 	using difference_type = typename std::iterator_traits<iterator>::difference_type;
 
 	Vector() noexcept = default;
-
-	explicit
-	Vector(size_type count)
-		:	_buffer(std::make_unique<T[]>(count))
-		,	_size(count)
-		,	_capacity(count)
-	{
-		// Postconditions
-		assert(_size == count);
-		assert(_capacity == _size);
-	}
-
-	Vector(size_type count, const T& item)
-		:	_buffer(std::make_unique<T[]>(count))
-		,	_size(count)
-		,	_capacity(count)
-	{
-		std::fill(begin(), end(), item);
-
-		// Postconditions
-		assert(_size == count);
-		assert(_capacity == _size);
-	}
 
 	Vector(std::initializer_list<T> ilist)
 		:	_buffer(std::make_unique<T[]>(ilist.size()))
@@ -82,7 +61,7 @@ public:
 		other._capacity = 0;
 	}
 
-	Vector& 
+	Vector&
 	operator=(const Vector& other)
 	{
 		// NOTE: Strong exception safety
@@ -97,7 +76,7 @@ public:
 		return *this;
 	}
 
-	Vector& 
+	Vector&
 	operator=(Vector&& other) noexcept
 	{
 		_buffer = std::move(other._buffer);
@@ -145,6 +124,42 @@ public:
 		return end();
 	}
 
+	reverse_iterator
+	rbegin()
+	{
+		return reverse_iterator{end()};
+	}
+
+	const_reverse_iterator
+	rbegin() const
+	{
+		return const_reverse_iterator{end()};
+	}
+
+	reverse_iterator
+	rend()
+	{
+		return reverse_iterator{begin()};
+	}
+
+	const_reverse_iterator
+	rend() const
+	{
+		return const_reverse_iterator{begin()};
+	}
+
+	const_reverse_iterator
+	crbegin() const
+	{
+		return rbegin();
+	}
+
+	const_reverse_iterator
+	crend() const
+	{
+		return rend();
+	}
+
 	pointer
 	data() noexcept
 	{
@@ -157,7 +172,7 @@ public:
 		return _buffer.get();
 	}
 
-	reference 
+	reference
 	operator[](size_type pos)
 	{
 		// Preconditions
@@ -175,6 +190,106 @@ public:
 		assert(_buffer);
 
 		return _buffer[pos];
+	}
+
+	void
+	append(const T& item)
+	{
+		// NOTE: Basic exception safety
+
+		const auto newSize = (_size + 1);
+		if(newSize > _capacity)
+		{
+			const auto newCapacity = (newSize * Multiplier);
+			auto newBuffer = std::make_unique<T[]>(newCapacity);
+
+			const auto appendPos = std::copy(begin(), end(), newBuffer.get());
+			*appendPos = item;
+
+			_buffer = std::move(newBuffer);
+			_capacity = newCapacity;
+		}
+		else
+		{
+			// Preconditions
+			assert(_buffer);
+
+			_buffer[_size] = item;
+		}
+
+		_size = newSize;
+	}
+
+	void
+	prepend(const T& item)
+	{
+		// NOTE: Basic exception safety
+
+		const auto newSize = (_size + 1);
+		if(newSize > _capacity)
+		{
+			// There is no space in current buffer. Make a new one, larger.
+			const auto newCapacity = (newSize * Multiplier);
+			auto newBuffer = std::make_unique<T[]>(newCapacity);
+
+			std::copy(begin(), end(), std::next(newBuffer.get()));
+			newBuffer[0] = item;
+
+			// Switch into new buffer and change capacity
+			_buffer = std::move(newBuffer);
+			_capacity = newCapacity;
+		}
+		else
+		{
+			// Preconditions
+			assert(_buffer);
+
+			_buffer[0] = item;
+		}
+
+		_size = newSize;
+	}
+
+	iterator
+	insert(const_iterator pos, const T& value)
+	{
+		// Preconditions
+		assert(std::distance(cbegin(), pos) + std::distance(pos, cend())
+			== std::distance(cbegin(), cend()));
+
+		// NOTE: Basic exception safety
+
+		const auto newSize = (_size + 1);
+		if(newSize > _capacity)
+		{
+			const auto newCapacity = (newSize * Multiplier);
+			auto newBuffer = std::make_unique<T[]>(newCapacity);
+
+			const auto newPos = std::copy(cbegin(), pos, newBuffer.get());
+			*newPos = value;
+			std::copy(pos, cend(), std::next(newPos));
+
+			_buffer = std::move(newBuffer);
+			_capacity = newCapacity;
+			_size = newSize;
+			return newPos;
+		}
+		else
+		{
+			// Preconditions
+			assert(_buffer);
+
+			auto it = end();
+			while(it != pos)
+			{
+				*it = *std::prev(it);
+				--it;
+			}
+
+			*it = value;
+			_size = newSize;
+			return it;
+		}
 	}
 
 	T
@@ -210,66 +325,13 @@ public:
 		return result;
 	}
 
-	void 
-	append(const T& item)
-	{
-		const auto newSize = (_size + 1);
-		if(newSize > _capacity)
-		{
-			// There is no space in current buffer. Make a new one, larger.
-			const auto newCapacity = (newSize * Multiplier);
-			auto newBuffer = std::make_unique<T[]>(newCapacity);
-			std::copy(begin(), end(), newBuffer.get());
-
-			newBuffer[_size] = item;
-
-			_buffer = std::move(newBuffer);
-			_capacity = newCapacity;
-		}
-		else
-		{
-			// Buffer is big enough to hold new item
-			assert(_buffer);
-			_buffer[_size] = item;
-		}
-
-		_size = newSize;
-	}
-
-	void
-	prepend(const T& item)
-	{	
-		const auto newSize = (_size + 1);
-		if(newSize > _capacity)
-		{
-			// There is no space in current buffer. Make a new one, larger.
-			const auto newCapacity = (newSize * Multiplier);
-			auto newBuffer = std::make_unique<T[]>(newCapacity);
-			std::copy(begin(), end(), std::next(newBuffer.get()));
-
-			newBuffer[0] = item;
-
-			// Switch into new buffer and change capacity
-			_buffer = std::move(newBuffer);
-			_capacity = newCapacity;
-		}
-		else
-		{
-			// Buffer is big enough to hold new item
-			assert(_buffer);
-			_buffer[0] = item;
-		}
-
-		_size = newSize;
-	}
-
-	size_type 
+	size_type
 	size() const noexcept
 	{
 		return _size;
 	}
 
-	bool 
+	bool
 	empty() const noexcept
 	{
 		return (_size == 0);
@@ -282,7 +344,7 @@ private:
 };
 
 template<typename T>
-inline bool 
+inline bool
 operator==(const T& lhs, const T& rhs)
 	noexcept(noexcept(*lhs.data() == *rhs.data()))
 {
@@ -295,7 +357,7 @@ operator==(const T& lhs, const T& rhs)
 }
 
 template<typename T>
-inline bool 
+inline bool
 operator!=(const T& lhs, const T& rhs)
 	noexcept(noexcept(lhs == rhs))
 {
