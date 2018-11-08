@@ -221,38 +221,7 @@ public:
 	iterator
 	insert(const_iterator pos, const T& value)
 	{
-		// Preconditions
-		assert(std::distance(cbegin(), pos) >= 0
-			&& std::distance(pos, cend()) >= 0);
-
-		// NOTE: Basic exception safety
-
-		const auto newSize = (_size + 1);
-		if(newSize > _capacity)
-		{
-			const auto newCapacity = (newSize * Multiplier);
-			auto newBuffer = std::make_unique<T[]>(newCapacity);
-
-			const auto newPos = std::copy(cbegin(), pos, newBuffer.get());
-			*(newPos++) = value;
-			std::copy(pos, cend(), newPos);
-
-			_buffer = std::move(newBuffer);
-			_capacity = newCapacity;
-			_size = newSize;
-			return newPos;
-		}
-		else
-		{
-			// Preconditions
-			assert(_buffer);
-
-			std::copy_backward(pos, cend(), end() + 1);
-			*const_cast<iterator>(pos) = value;
-
-			_size = newSize;
-			return const_cast<iterator>(pos);
-		}
+		return insertImpl(const_cast<iterator>(pos), value);
 	}
 
 	T
@@ -308,6 +277,43 @@ public:
 
 private:
 	iterator
+	insertImpl(iterator pos, const T& value)
+	{
+		// Preconditions
+		assert(std::distance(begin(), pos) >= 0
+			&& std::distance(pos, end()) >= 0);
+
+		// NOTE: Basic exception safety
+
+		const auto newSize = (_size + 1);
+		if(newSize > _capacity)
+		{
+			const auto newCapacity = (newSize * Multiplier);
+			auto newBuffer = std::make_unique<T[]>(newCapacity);
+
+			const auto newPos = std::move(begin(), pos, newBuffer.get());
+			*newPos = value;
+			std::move(pos, end(), newPos + 1);
+
+			_buffer = std::move(newBuffer);
+			_capacity = newCapacity;
+			_size = newSize;
+			return newPos;
+		}
+		else
+		{
+			// Preconditions
+			assert(_buffer);
+
+			std::move_backward(pos, end(), end() + 1);
+			*pos = value;
+
+			_size = newSize;
+			return pos;
+		}
+	}
+
+	iterator
 	eraseImpl(iterator first, iterator last)
 	{
 		if(first == last)
@@ -323,7 +329,7 @@ private:
 			&& std::distance(last, end()) >= 0);
 		assert(std::distance(first, last) >= 0);
 
-		const auto afterLastCopied = std::copy(last, end(), first);
+		const auto afterLastCopied = std::move(last, end(), first);
 		util::destroy(afterLastCopied, end());
 
 		_size -= std::distance(first, last);
