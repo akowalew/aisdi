@@ -234,8 +234,8 @@ public:
 			auto newBuffer = std::make_unique<T[]>(newCapacity);
 
 			const auto newPos = std::copy(cbegin(), pos, newBuffer.get());
-			*newPos = value;
-			std::copy(pos, cend(), std::next(newPos));
+			*(newPos++) = value;
+			std::copy(pos, cend(), newPos);
 
 			_buffer = std::move(newBuffer);
 			_capacity = newCapacity;
@@ -247,16 +247,11 @@ public:
 			// Preconditions
 			assert(_buffer);
 
-			auto it = end();
-			while(it != pos)
-			{
-				*it = *std::prev(it);
-				--it;
-			}
+			std::copy_backward(pos, cend(), end() + 1);
+			*const_cast<iterator>(pos) = value;
 
-			*it = value;
 			_size = newSize;
-			return it;
+			return const_cast<iterator>(pos);
 		}
 	}
 
