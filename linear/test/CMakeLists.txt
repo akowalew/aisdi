@@ -32,7 +32,6 @@ addUnitTest(VectorTest2)
 addUnitTest(ListTest)
 addUnitTest(ListTest2)
 
-
 # Benchmarks
 
 function(addBenchmark NAME)
