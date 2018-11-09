@@ -329,8 +329,8 @@ private:
 			&& std::distance(last, end()) >= 0);
 		assert(std::distance(first, last) >= 0);
 
-		const auto afterLastCopied = std::move(last, end(), first);
-		util::destroy(afterLastCopied, end());
+		const auto afterLastMoved = std::move(last, end(), first);
+		util::destroy(afterLastMoved, end());
 
 		_size -= std::distance(first, last);
 
@@ -344,21 +344,19 @@ private:
 
 template<typename T>
 inline bool
-operator==(const T& lhs, const T& rhs)
-	noexcept(noexcept(*lhs.data() == *rhs.data()))
+operator==(const Vector<T>& lhs, const Vector<T>& rhs)
 {
 	if(lhs.size() != rhs.size())
 	{
 		return false;
 	}
 
-	return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+	return std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin());
 }
 
 template<typename T>
 inline bool
-operator!=(const T& lhs, const T& rhs)
-	noexcept(noexcept(lhs == rhs))
+operator!=(const Vector<T>& lhs, const Vector<T>& rhs)
 {
 	return !(lhs == rhs);
 }
