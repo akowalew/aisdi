@@ -49,25 +49,18 @@ public:
 	}
 
 	List(List&& other) noexcept
+		:	List()
 	{
-		_head.next = other._head.next;
-		_tail.prev = other._tail.prev;
-		_size = other._size;
-
-		other._head.next = &other._tail;
-		other._tail.prev = &other._head;
-		other._size = 0;
-
-		// Postconditions
-		assert(other.empty());
-		assert(other.size() == 0);
+		*this = std::move(other);
 	}
 
 	List&
 	operator=(const List& other)
 	{
-		init();
-		assign(other.begin(), other.end());
+		if(this != &other)
+		{
+			assign(other.begin(), other.end());
+		}
 
 		return *this;
 	}
@@ -75,17 +68,26 @@ public:
 	List&
 	operator=(List&& other)
 	{
-		_head.next = other._head.next;
-		_tail.prev = other._tail.prev;
-		_size = other._size;
+		if(this != &other)
+		{
+			clear();
 
-		other._head.next = &other._tail;
-		other._tail.prev = &other._head;
-		other._size = 0;
+			_head.next = other._head.next;
+			_head.next->prev = &_head;
 
-		// Postconditions
-		assert(other.empty());
-		assert(other.size() == 0);
+			_tail.prev = other._tail.prev;
+			_tail.prev->next = &_tail;
+
+			_size = other._size;
+
+			other._head.next = &other._tail;
+			other._tail.prev = &other._head;
+			other._size = 0;
+
+			// Postconditions
+			assert(other.empty());
+			assert(other.size() == 0);
+		}
 
 		return *this;
 	}
@@ -175,7 +177,7 @@ public:
 		assert(_size > 0);
 		assert(_head.next);
 
-		return _head.next->value;
+		return *reinterpret_cast<pointer>(&_head.next->data);
 	}
 
 	const_reference
@@ -191,7 +193,7 @@ public:
 		assert(_size > 0);
 		assert(_tail.prev);
 
-		return _tail.prev->value;
+		return *reinterpret_cast<pointer>(&_tail.prev->data);
 	}
 
 	const_reference
@@ -200,16 +202,16 @@ public:
 		return const_cast<List*>(this)->back();
 	}
 
-	template<typename InputIt>
+	template<typename TInputIt>
 	void
-	assign(InputIt first, InputIt last)
+	assign(TInputIt first, TInputIt last)
 	{
 		clear();
 
 		auto prevNode = &_head;
-		std::for_each(first, last, [&prevNode](auto& item)
+		std::for_each(first, last, [&prevNode](auto& value)
 			{
-				auto node = new Node{item, prevNode};
+				auto node = new Node{value, prevNode};
 				prevNode->next = node;
 				prevNode = node;
 			});
@@ -227,6 +229,7 @@ public:
 		while(node->next)
 		{
 			const auto next = node->next;
+			reinterpret_cast<T*>(&node->data)->~T();
 			delete node;
 			node = next;
 		}
@@ -235,19 +238,19 @@ public:
 	}
 
 	void
-	append(const T& item)
+	append(const T& value)
 	{
-		insert(end(), item);
+		insert(end(), value);
 	}
 
 	void
-	prepend(const T& item)
+	prepend(const T& value)
 	{
-		insert(begin(), item);
+		insert(begin(), value);
 	}
 
 	iterator
-	insert(const const_iterator& pos, const T& item)
+	insert(const const_iterator& pos, const T& value)
 	{
 		// NOTE: Strong exception safety
 
@@ -257,7 +260,7 @@ public:
 		assert(nextNode);
 
 		const auto prevNode = nextNode->prev;
-		auto newNode = new Node{item, prevNode, nextNode};
+		auto newNode = new Node(value, prevNode, nextNode);
 		prevNode->next = newNode;
 		nextNode->prev = newNode;
 		++_size;
@@ -293,6 +296,12 @@ public:
 		erase(first, last);
 
 		return result;
+	}
+
+	iterator
+	erase(const const_iterator& pos)
+	{
+		return erase(pos, std::next(pos));
 	}
 
 	iterator
@@ -348,14 +357,17 @@ private:
 	//  Without RAII, all items will be removed with simple loop in destructor.
 	struct Node
 	{
-		explicit
-		Node(const T& value = T(), Node* prev = nullptr, Node* next = nullptr)
-			:	value(value)
-			,	prev(prev)
-			,	next(next)
-		{}
+		Node() = default;
 
-		T value;
+		explicit
+		Node(const T& value, Node* prev = nullptr, Node* next = nullptr)
+			:	prev(prev)
+			,	next(next)
+		{
+			*reinterpret_cast<T*>(&data) = value;
+		}
+
+		std::aligned_storage_t<sizeof(T), alignof(T)> data;
 		Node* prev = nullptr;
 		Node* next = nullptr;
 	};
@@ -423,7 +435,7 @@ public:
 		// Preconditions
 		assert(_node->next); // Is not a tail
 
-		return _node->value;
+		return *reinterpret_cast<const T*>(&_node->data);
 	}
 
 	const_pointer

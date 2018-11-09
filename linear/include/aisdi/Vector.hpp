@@ -13,7 +13,7 @@ namespace aisdi {
 template<typename T>
 class Vector
 {
-	constexpr static auto Multiplier = 2;
+	constexpr static auto ResizeMultiplier = 2;
 
 public:
 	using value_type = T;
@@ -66,14 +66,17 @@ public:
 	Vector&
 	operator=(const Vector& other)
 	{
-		// NOTE: Strong exception safety
+		if(this != &other)
+		{
+			// NOTE: Strong exception safety
 
-		auto newBuffer = std::make_unique<T[]>(other._capacity);
-		std::copy(other.begin(), other.end(), newBuffer.get());
+			auto newBuffer = std::make_unique<T[]>(other._capacity);
+			std::copy(other.begin(), other.end(), newBuffer.get());
 
-		_buffer = std::move(newBuffer);
-		_size = other._size;
-		_capacity = other._capacity;
+			_buffer = std::move(newBuffer);
+			_size = other._size;
+			_capacity = other._capacity;
+		}
 
 		return *this;
 	}
@@ -81,11 +84,14 @@ public:
 	Vector&
 	operator=(Vector&& other) noexcept
 	{
-		_buffer = std::move(other._buffer);
-		_size = other._size;
-		_capacity = other._capacity;
+		if(this != &other)
+		{
+			_buffer = std::move(other._buffer);
+			_size = other._size;
+			_capacity = other._capacity;
 
-		other._size = other._capacity = 0;
+			other._size = other._capacity = 0;
+		}
 
 		return *this;
 	}
@@ -257,6 +263,13 @@ public:
 	}
 
 	iterator
+	erase(const_iterator pos)
+	{
+		return eraseImpl(const_cast<iterator>(pos),
+			const_cast<iterator>(std::next(pos)));
+	}
+
+	iterator
 	erase(const_iterator first, const_iterator last)
 	{
 		return eraseImpl(const_cast<iterator>(first),
@@ -288,7 +301,7 @@ private:
 		const auto newSize = (_size + 1);
 		if(newSize > _capacity)
 		{
-			const auto newCapacity = (newSize * Multiplier);
+			const auto newCapacity = (newSize * ResizeMultiplier);
 			auto newBuffer = std::make_unique<T[]>(newCapacity);
 
 			const auto newPos = std::move(begin(), pos, newBuffer.get());

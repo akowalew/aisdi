@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenEmptyInitializer_WhenListInitializing_ThenItIsEmpty,
 	T, TestTypes)
 {
-	const auto il = std::initializer_list<T>{};
+	auto il = std::initializer_list<T>{};
 	const auto list = aisdi::List<T>{il};
 
 	BOOST_CHECK(list.empty());
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenInitializer_WhenListInitializing_ThenItHasSameItems,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	const auto list = aisdi::List<T>{il};
 
 	BOOST_CHECK(list.size() == il.size());
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenSameContainers_WhenCompared_ThenTheyAreEqual,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	const auto list1 = aisdi::List<T>{il};
 	const auto list2 = aisdi::List<T>{il};
 
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenAppending_ThenItemIsPlacedAtEnd,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 	const auto previousSize = list.size();
 
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenPrepending_ThenItemIsPlacedAtBegin,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 	const auto previousSize = list.size();
 
@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenInsertingAtBegin_ThenItemIsInPrepended,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 	const auto prevSize = list.size();
 
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenInsertingInMiddle_ThenItemIsInserted,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}, T{4}, T{5}};
+	auto il = {T{1}, T{2}, T{3}, T{4}, T{5}};
 	auto list = aisdi::List<T>{il};
 	const auto prevSize = list.size();
 
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenInsertingAtEnd_ThenItemIsAppended,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 	const auto prevSize = list.size();
 
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenPoppingBack_ThenLastItemIsRemovedAndReturned,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	const auto lastItem = *std::rbegin(il);
 
 	auto list = aisdi::List<T>{il};
@@ -419,7 +419,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenPoppingFront_ThenFirstItemIsRemovedAndReturned,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	const auto firstItem = *std::begin(il);
 
 	auto list = aisdi::List<T>{il};
@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenErasingFirstItem_ThenItIsPoppedFromFront,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 
 	const auto first = list.begin();
@@ -487,7 +487,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenErasingAtBeginning_ThenItemsAreRemovedFromFront,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 
 	const auto count = 2;
@@ -504,7 +504,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenErasingLastItem_ThenItIsPoppedFromBack,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 
 	const auto last = list.end();
@@ -520,7 +520,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenErasingAtEnd_ThenItemsAreRemovedFromBack,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 
 	const auto count = 2;
@@ -537,7 +537,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenErasingOneInMiddle_ThenItemIsRemoved,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 
 	const auto shift = 1;
@@ -557,7 +557,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenErasingInMiddle_ThenItemsAreRemoved,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}, T{4}, T{5}};
+	auto il = {T{1}, T{2}, T{3}, T{4}, T{5}};
 	auto list = aisdi::List<T>{il};
 
 	const auto shift = 1;
@@ -578,7 +578,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	GivenContainer_WhenErasingFromBeginToEnd_ThenItIsEmpty,
 	T, TestTypes)
 {
-	const auto il = {T{1}, T{2}, T{3}};
+	auto il = {T{1}, T{2}, T{3}};
 	auto list = aisdi::List<T>{il};
 
 	const auto first = list.begin();
