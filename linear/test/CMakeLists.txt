@@ -40,9 +40,6 @@ function(addBenchmark NAME)
 		${NAME}.cpp
 	)
 
-	add_test(NAME ${NAME} 
-		COMMAND ${NAME})
-
 	target_link_libraries(${NAME}
 		PRIVATE
 			aisdi_linear
