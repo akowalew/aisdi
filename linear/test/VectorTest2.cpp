@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenCollection_WhenCreatedWithDefaultConstructor_
                               T,
                               TestedTypes)
 {
-  const LinearCollection<T> collection;
+  const LinearCollection<T> collection{};
 
   BOOST_CHECK(collection.empty());
 }
@@ -507,7 +507,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyCollection_WhenAssigningToOther_ThenOthe
                               T,
                               TestedTypes)
 {
-  const LinearCollection<T> collection;
+  const LinearCollection<T> collection{};
   LinearCollection<T> other = { 100, 200, 300, 400 };
 
   other = collection;
@@ -604,7 +604,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyCollection_WhenGettingSize_ThenZeroIsRet
                               T,
                               TestedTypes)
 {
-  const LinearCollection<T> collection;
+  const LinearCollection<T> collection{};
 
   BOOST_CHECK_EQUAL(collection.size(), 0);
 }
