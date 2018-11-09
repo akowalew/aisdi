@@ -23,5 +23,7 @@ target_compile_options(aisdi_linear
 )
 
 if(BUILD_TESTS)
+	add_subdirectory(submodules/hayai)
+	include_directories(submodules/hayai/src)
 	add_subdirectory(test)
 endif()
