@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.7.2 FATAL_ERROR)
 project(aisdi_linear CXX)
 
-option(BUILD_TESTS "Build tests for project" ON)
+option(AISDI_LINEAR_BUILD_TESTS "Build tests for project" ON)
 
-if(BUILD_TESTS)
+if(AISDI_LINEAR_BUILD_TESTS)
 	enable_testing()
 endif()
 
@@ -22,7 +22,7 @@ target_compile_options(aisdi_linear
 		-pedantic
 )
 
-if(BUILD_TESTS)
+if(AISDI_LINEAR_BUILD_TESTS)
 	add_subdirectory(submodules/hayai)
 	include_directories(submodules/hayai/src)
 	add_subdirectory(test)
