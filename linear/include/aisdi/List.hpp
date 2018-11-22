@@ -29,8 +29,11 @@ public:
 	using size_type = std::size_t;
 
 	List()
+		:	_head(new Node())
+		,	_tail(new Node())
 	{
-		init();
+		_head->next = _tail;
+		_tail->prev = _head;
 
 		// Postconditions
 		assert(empty());
@@ -40,6 +43,9 @@ public:
 	~List()
 	{
 		clear();
+
+		delete _head;
+		delete _tail;
 	}
 
 	List(const List& other)
@@ -72,16 +78,16 @@ public:
 		{
 			clear();
 
-			_head.next = other._head.next;
-			_head.next->prev = &_head;
+			_head->next = other._head->next;
+			_head->next->prev = _head;
 
-			_tail.prev = other._tail.prev;
-			_tail.prev->next = &_tail;
+			_tail->prev = other._tail->prev;
+			_tail->prev->next = _tail;
 
 			_size = other._size;
 
-			other._head.next = &other._tail;
-			other._tail.prev = &other._head;
+			other._head->next = other._tail;
+			other._tail->prev = other._head;
 			other._size = 0;
 
 			// Postconditions
@@ -101,25 +107,25 @@ public:
 	iterator
 	begin()
 	{
-		return {_head.next};
+		return {_head->next};
 	}
 
 	const_iterator
 	begin() const
 	{
-		return {_head.next};
+		return {_head->next};
 	}
 
 	iterator
 	end()
 	{
-		return {&_tail};
+		return {_tail};
 	}
 
 	const_iterator
 	end() const
 	{
-		return {&_tail};
+		return {_tail};
 	}
 
 	const_iterator
@@ -175,9 +181,9 @@ public:
 	{
 		// Preconditions
 		assert(_size > 0);
-		assert(_head.next);
+		assert(_head->next);
 
-		return *reinterpret_cast<pointer>(&_head.next->data);
+		return *reinterpret_cast<pointer>(&_head->next->data);
 	}
 
 	const_reference
@@ -191,9 +197,9 @@ public:
 	{
 		// Preconditions
 		assert(_size > 0);
-		assert(_tail.prev);
+		assert(_tail->prev);
 
-		return *reinterpret_cast<pointer>(&_tail.prev->data);
+		return *reinterpret_cast<pointer>(&_tail->prev->data);
 	}
 
 	const_reference
@@ -208,7 +214,7 @@ public:
 	{
 		clear();
 
-		auto prevNode = &_head;
+		auto prevNode = _head;
 		std::for_each(first, last, [&prevNode](auto& value)
 			{
 				auto node = new Node{value, prevNode};
@@ -216,16 +222,15 @@ public:
 				prevNode = node;
 			});
 
-		prevNode->next = &_tail;
-		_tail.prev = prevNode;
-
+		prevNode->next = _tail;
+		_tail->prev = prevNode;
 		_size = std::distance(first, last);
 	}
 
 	void
 	clear()
 	{
-		auto node = _head.next;
+		auto node = _head->next;
 		while(node->next)
 		{
 			const auto next = node->next;
@@ -234,7 +239,9 @@ public:
 			node = next;
 		}
 
-		init();
+		_head->next = _tail;
+		_tail->prev = _head;
+		_size = 0;
 	}
 
 	void
@@ -314,20 +321,20 @@ public:
 
 		auto node = const_cast<Node*>(first.node());
 		auto lastNode = const_cast<Node*>(last.node());
-
-		// Preconditions
 		assert(node);
 		assert(lastNode);
 
 		auto prevNode = node->prev;
+		assert(prevNode); // prevNode should not be the head
+
 		while(node != lastNode)
 		{
-			// Preconditions
-			assert(node);
-
 			auto nextNode = node->next;
+			assert(nextNode);
+
 			delete node;
 			node = nextNode;
+
 			_size--;
 		}
 
@@ -372,14 +379,8 @@ private:
 		Node* next = nullptr;
 	};
 
-	void init()
-	{
-		_head.next = &_tail;
-		_tail.prev = &_head;
-	}
-
-	Node _head;
-	Node _tail;
+	Node* _head;
+	Node* _tail;
 	std::size_t _size = 0;
 };
 
