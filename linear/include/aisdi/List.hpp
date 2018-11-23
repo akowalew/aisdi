@@ -29,8 +29,8 @@ public:
 	using size_type = std::size_t;
 
 	List()
-		:	_head(new Node())
-		,	_tail(new Node())
+		:	_head(new BasicNode())
+		,	_tail(new BasicNode())
 	{
 		_head->next = _tail;
 		_tail->prev = _head;
@@ -183,7 +183,7 @@ public:
 		assert(_size > 0);
 		assert(_head->next);
 
-		return *reinterpret_cast<pointer>(&_head->next->data);
+		return reinterpret_cast<Node*>(_head->next)->data;
 	}
 
 	const_reference
@@ -199,7 +199,7 @@ public:
 		assert(_size > 0);
 		assert(_tail->prev);
 
-		return *reinterpret_cast<pointer>(&_tail->prev->data);
+		return reinterpret_cast<Node*>(_tail->prev)->data;
 	}
 
 	const_reference
@@ -217,7 +217,7 @@ public:
 		auto prevNode = _head;
 		std::for_each(first, last, [&prevNode](auto& value)
 			{
-				auto node = new Node{value, prevNode};
+				auto node = new Node{prevNode, nullptr, value};
 				prevNode->next = node;
 				prevNode = node;
 			});
@@ -234,8 +234,7 @@ public:
 		while(node->next)
 		{
 			const auto next = node->next;
-			reinterpret_cast<T*>(&node->data)->~T();
-			delete node;
+			delete reinterpret_cast<Node*>(node);
 			node = next;
 		}
 
@@ -261,13 +260,13 @@ public:
 	{
 		// NOTE: Strong exception safety
 
-		auto nextNode = const_cast<Node*>(pos.node());
+		auto nextNode = const_cast<BasicNode*>(pos.node());
 
 		// Preconditions
 		assert(nextNode);
 
 		const auto prevNode = nextNode->prev;
-		auto newNode = new Node(value, prevNode, nextNode);
+		auto newNode = new Node(prevNode, nextNode, value);
 		prevNode->next = newNode;
 		nextNode->prev = newNode;
 		++_size;
@@ -319,8 +318,8 @@ public:
 			return last;
 		}
 
-		auto node = const_cast<Node*>(first.node());
-		auto lastNode = const_cast<Node*>(last.node());
+		auto node = const_cast<BasicNode*>(first.node());
+		auto lastNode = const_cast<BasicNode*>(last.node());
 		assert(node);
 		assert(lastNode);
 
@@ -332,7 +331,7 @@ public:
 			auto nextNode = node->next;
 			assert(nextNode);
 
-			delete node;
+			delete reinterpret_cast<Node*>(node);
 			node = nextNode;
 
 			_size--;
@@ -356,31 +355,41 @@ public:
 	}
 
 private:
+	struct BasicNode
+	{
+		BasicNode() = default;
+
+		BasicNode(BasicNode* prev, BasicNode* next)
+			:	prev(prev)
+			,	next(next)
+		{}
+
+		BasicNode* prev = nullptr;
+		BasicNode* next = nullptr;
+	};
+
+	struct Node
+		:	public BasicNode
+	{
+		Node() = default;
+
+		template<typename U>
+		Node(BasicNode* prev, BasicNode* next, U&& data)
+			:	BasicNode(prev, next)
+			,	data(std::forward<U>(data))
+		{}
+
+		T data;
+	};
+
 	// NOTE: I've decided not to use RAII for managing Nodes lifetime
 	//  because of perfomance impact during List's destruction.
 	//  When using e.g. unique_ptr all items will be recursive deleted,
 	//  so when large number of elements will be allocated, there could
 	//  be risk of stack overflow.
 	//  Without RAII, all items will be removed with simple loop in destructor.
-	struct Node
-	{
-		Node() = default;
-
-		explicit
-		Node(const T& value, Node* prev = nullptr, Node* next = nullptr)
-			:	prev(prev)
-			,	next(next)
-		{
-			*reinterpret_cast<T*>(&data) = value;
-		}
-
-		std::aligned_storage_t<sizeof(T), alignof(T)> data;
-		Node* prev = nullptr;
-		Node* next = nullptr;
-	};
-
-	Node* _head;
-	Node* _tail;
+	BasicNode* _head;
+	BasicNode* _tail;
 	std::size_t _size = 0;
 };
 
@@ -417,14 +426,14 @@ public:
 	using reference = typename List::const_reference;
 	using const_reference = typename List::const_reference;
 
-	ConstIterator(const Node* node)
+	ConstIterator(const BasicNode* node)
 		:	_node(node)
 	{
 		// Pre/Postconditions
 		assert(node);
 	}
 
-	const Node*
+	const BasicNode*
 	node() const
 	{
 		return _node;
@@ -436,7 +445,7 @@ public:
 		// Preconditions
 		assert(_node->next); // Is not a tail
 
-		return *reinterpret_cast<const T*>(&_node->data);
+		return reinterpret_cast<const Node*>(_node)->data;
 	}
 
 	const_pointer
@@ -524,7 +533,7 @@ public:
 	}
 
 private:
-	const Node* _node;
+	const BasicNode* _node;
 };
 
 template<typename T>
@@ -535,17 +544,15 @@ public:
 	using pointer = typename List::pointer;
 	using reference = typename List::reference;
 
-	Iterator(Node* node)
+	Iterator(BasicNode* node)
 		:	ConstIterator(node)
-	{
-
-	}
+	{}
 
 	Iterator(const ConstIterator& other)
 		:	ConstIterator(other)
 	{}
 
-	Node*
+	BasicNode*
 	node()
 	{
 		return const_cast<Node*>(ConstIterator::node());

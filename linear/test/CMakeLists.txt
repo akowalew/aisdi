@@ -25,6 +25,13 @@ function(addUnitTest NAME)
 		PRIVATE
 			BOOST_TEST_DYN_LINK=1
 	)
+
+	target_compile_options(${NAME}
+		PRIVATE
+			-Wall
+			-Wextra
+			-pedantic
+	)
 endfunction()
 
 addUnitTest(VectorTest)
@@ -43,6 +50,13 @@ function(addBenchmark NAME)
 		PRIVATE
 			aisdi_linear
 			hayai_main
+	)
+
+	target_compile_options(${NAME}
+		PRIVATE
+			-Wall
+			-Wextra
+			-pedantic
 	)
 endfunction()
 

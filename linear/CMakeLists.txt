@@ -14,16 +14,32 @@ target_include_directories(aisdi_linear
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_compile_options(aisdi_linear
+target_compile_features(aisdi_linear
 	INTERFACE
-		-std=c++14
-		-Wall
-		-Wextra
-		-pedantic
+		cxx_auto_type
+		cxx_constexpr
+		cxx_defaulted_functions
+		cxx_defaulted_move_initializers
+		cxx_delegating_constructors
+		cxx_generalized_initializers
+		cxx_generic_lambdas
+		cxx_inheriting_constructors
+		cxx_lambdas
+		cxx_lambda_init_captures
+		cxx_noexcept
+		cxx_nullptr
+		cxx_range_for
+		cxx_return_type_deduction
+		cxx_rvalue_references
+		cxx_static_assert
 )
 
 if(AISDI_LINEAR_BUILD_TESTS)
+	set(BUILD_HAYAI_SAMPLES OFF CACHE BOOL "Don't build hayai samples")
+	set(BUILD_HAYAI_TESTS OFF CACHE BOOL "Don't build hayai tests")
+	set(INSTALL_HAYAI OFF CACHE BOOL "Don't install hayai at build")
 	add_subdirectory(submodules/hayai)
 	include_directories(submodules/hayai/src)
+
 	add_subdirectory(test)
 endif()
