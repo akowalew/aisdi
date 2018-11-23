@@ -29,11 +29,9 @@ public:
 	using size_type = std::size_t;
 
 	List()
-		:	_head(new BasicNode())
-		,	_tail(new BasicNode())
 	{
-		_head->next = _tail;
-		_tail->prev = _head;
+		_head.next = &_tail;
+		_tail.prev = &_head;
 
 		// Postconditions
 		assert(empty());
@@ -43,9 +41,6 @@ public:
 	~List()
 	{
 		clear();
-
-		delete _head;
-		delete _tail;
 	}
 
 	List(const List& other)
@@ -78,16 +73,16 @@ public:
 		{
 			clear();
 
-			_head->next = other._head->next;
-			_head->next->prev = _head;
+			_head.next = other._head.next;
+			_head.next->prev = &_head;
 
-			_tail->prev = other._tail->prev;
-			_tail->prev->next = _tail;
+			_tail.prev = other._tail.prev;
+			_tail.prev->next = &_tail;
 
 			_size = other._size;
 
-			other._head->next = other._tail;
-			other._tail->prev = other._head;
+			other._head.next = &other._tail;
+			other._tail.prev = &other._head;
 			other._size = 0;
 
 			// Postconditions
@@ -107,25 +102,25 @@ public:
 	iterator
 	begin()
 	{
-		return {_head->next};
+		return {_head.next};
 	}
 
 	const_iterator
 	begin() const
 	{
-		return {_head->next};
+		return {_head.next};
 	}
 
 	iterator
 	end()
 	{
-		return {_tail};
+		return {&_tail};
 	}
 
 	const_iterator
 	end() const
 	{
-		return {_tail};
+		return {&_tail};
 	}
 
 	const_iterator
@@ -181,9 +176,9 @@ public:
 	{
 		// Preconditions
 		assert(_size > 0);
-		assert(_head->next);
+		assert(_head.next);
 
-		return reinterpret_cast<Node*>(_head->next)->data;
+		return reinterpret_cast<Node*>(_head.next)->data;
 	}
 
 	const_reference
@@ -197,9 +192,9 @@ public:
 	{
 		// Preconditions
 		assert(_size > 0);
-		assert(_tail->prev);
+		assert(_tail.prev);
 
-		return reinterpret_cast<Node*>(_tail->prev)->data;
+		return reinterpret_cast<Node*>(_tail.prev)->data;
 	}
 
 	const_reference
@@ -214,7 +209,7 @@ public:
 	{
 		clear();
 
-		auto prevNode = _head;
+		auto prevNode = &_head;
 		std::for_each(first, last, [&prevNode](auto& value)
 			{
 				auto node = new Node{prevNode, nullptr, value};
@@ -222,15 +217,15 @@ public:
 				prevNode = node;
 			});
 
-		prevNode->next = _tail;
-		_tail->prev = prevNode;
+		prevNode->next = &_tail;
+		_tail.prev = prevNode;
 		_size = std::distance(first, last);
 	}
 
 	void
 	clear()
 	{
-		auto node = _head->next;
+		auto node = _head.next;
 		while(node->next)
 		{
 			const auto next = node->next;
@@ -238,8 +233,8 @@ public:
 			node = next;
 		}
 
-		_head->next = _tail;
-		_tail->prev = _head;
+		_head.next = &_tail;
+		_tail.prev = &_head;
 		_size = 0;
 	}
 
@@ -260,7 +255,7 @@ public:
 	{
 		// NOTE: Strong exception safety
 
-		auto nextNode = const_cast<BasicNode*>(pos.node());
+		auto nextNode = const_cast<BasicNode*>(pos._node);
 
 		// Preconditions
 		assert(nextNode);
@@ -318,8 +313,8 @@ public:
 			return last;
 		}
 
-		auto node = const_cast<BasicNode*>(first.node());
-		auto lastNode = const_cast<BasicNode*>(last.node());
+		auto node = const_cast<BasicNode*>(first._node);
+		auto lastNode = const_cast<BasicNode*>(last._node);
 		assert(node);
 		assert(lastNode);
 
@@ -388,8 +383,8 @@ private:
 	//  so when large number of elements will be allocated, there could
 	//  be risk of stack overflow.
 	//  Without RAII, all items will be removed with simple loop in destructor.
-	BasicNode* _head;
-	BasicNode* _tail;
+	BasicNode _head;
+	BasicNode _tail;
 	std::size_t _size = 0;
 };
 
@@ -416,6 +411,7 @@ template<typename T>
 class List<T>::ConstIterator
 {
 	using Node = List<T>::Node;
+	friend List<T>;
 
 public:
 	using iterator_category = std::bidirectional_iterator_tag;
@@ -540,6 +536,8 @@ template<typename T>
 class List<T>::Iterator
 	:	public List<T>::ConstIterator
 {
+	friend List<T>;
+
 public:
 	using pointer = typename List::pointer;
 	using reference = typename List::reference;
