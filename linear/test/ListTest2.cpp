@@ -299,17 +299,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenIterator_WhenPreIncrementing_ThenNewPositionI
   BOOST_CHECK(it == collection.end());
 }
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEndIterator_WhenIncrementing_ThenOperationThrows,
-//                               T,
-//                               TestedTypes)
-// {
-//   LinearCollection<T> collection;
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEndIterator_WhenIncrementing_ThenOperationThrows,
+                              T,
+                              TestedTypes)
+{
+  LinearCollection<T> collection;
 
-//   BOOST_CHECK_THROW(collection.end()++, std::out_of_range);
-//   BOOST_CHECK_THROW(++(collection.end()), std::out_of_range);
-//   BOOST_CHECK_THROW(collection.cend()++, std::out_of_range);
-//   BOOST_CHECK_THROW(++(collection.cend()), std::out_of_range);
-// }
+  BOOST_CHECK_THROW(collection.end()++, std::logic_error);
+  BOOST_CHECK_THROW(++(collection.end()), std::logic_error);
+  BOOST_CHECK_THROW(collection.cend()++, std::logic_error);
+  BOOST_CHECK_THROW(++(collection.cend()), std::logic_error);
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEndIterator_WhenDecrementing_ThenIteratorPointsToLastItem,
                               T,
@@ -353,27 +353,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenIterator_WhenPostDecrementing_ThenOldIterator
   BOOST_CHECK_EQUAL(*it, 1);
 }
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(GivenBeginIterator_WhenDecrementing_ThenOperationThrows,
-//                               T,
-//                               TestedTypes)
-// {
-//   LinearCollection<T> collection;
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenBeginIterator_WhenDecrementing_ThenOperationThrows,
+                              T,
+                              TestedTypes)
+{
+  LinearCollection<T> collection;
 
-//   BOOST_CHECK_THROW(collection.begin()--, std::out_of_range);
-//   BOOST_CHECK_THROW(--(collection.begin()), std::out_of_range);
-//   BOOST_CHECK_THROW(collection.cbegin()--, std::out_of_range);
-//   BOOST_CHECK_THROW(--(collection.cbegin()), std::out_of_range);
-// }
+  BOOST_CHECK_THROW(collection.begin()--, std::logic_error);
+  BOOST_CHECK_THROW(--(collection.begin()), std::logic_error);
+  BOOST_CHECK_THROW(collection.cbegin()--, std::logic_error);
+  BOOST_CHECK_THROW(--(collection.cbegin()), std::logic_error);
+}
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEndIterator_WhenDereferencing_ThenOperationThrows,
-//                               T,
-//                               TestedTypes)
-// {
-//   LinearCollection<T> collection;
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEndIterator_WhenDereferencing_ThenOperationThrows,
+                              T,
+                              TestedTypes)
+{
+  LinearCollection<T> collection;
 
-//   BOOST_CHECK_THROW(*collection.end(), std::out_of_range);
-//   BOOST_CHECK_THROW(*collection.cend(), std::out_of_range);
-// }
+  BOOST_CHECK_THROW(*collection.end(), std::logic_error);
+  BOOST_CHECK_THROW(*collection.cend(), std::logic_error);
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenConstIterator_WhenDereferencing_ThenItemIsReturned,
                               T,
@@ -694,23 +694,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNonEmptyCollection_WhenInserting_ThenSizeIsUp
   BOOST_CHECK_EQUAL(collection.size(), 4);
 }
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyCollection_WhenPoppingFirst_ThenOperationThrows,
-//                               T,
-//                               TestedTypes)
-// {
-//   LinearCollection<T> collection;
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyCollection_WhenPoppingFirst_ThenOperationThrows,
+                              T,
+                              TestedTypes)
+{
+  LinearCollection<T> collection;
 
-//   BOOST_CHECK_THROW(collection.popFront(), std::logic_error);
-// }
+  BOOST_CHECK_THROW(collection.popFront(), std::logic_error);
+}
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyCollection_WhenPoppingLast_ThenOperationThrows,
-//                               T,
-//                               TestedTypes)
-// {
-//   LinearCollection<T> collection;
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyCollection_WhenPoppingLast_ThenOperationThrows,
+                              T,
+                              TestedTypes)
+{
+  LinearCollection<T> collection;
 
-//   BOOST_CHECK_THROW(collection.popBack(), std::logic_error);
-// }
+  BOOST_CHECK_THROW(collection.popBack(), std::logic_error);
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenCollectionWithSingleItem_WhenPoppingFirst_ThenCollectionIsEmpty,
                               T,
@@ -796,23 +796,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNonEmptyCollection_WhenPoppingLast_ThenItemsI
   BOOST_CHECK_EQUAL(collection.popBack(), 303);
 }
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyCollection_WhenErasing_ThenOperationThrows,
-//                               T,
-//                               TestedTypes)
-// {
-//   LinearCollection<T> collection;
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyCollection_WhenErasing_ThenOperationThrows,
+                              T,
+                              TestedTypes)
+{
+  LinearCollection<T> collection;
 
-//   BOOST_CHECK_THROW(collection.erase(collection.begin()), std::out_of_range);
-// }
+  BOOST_CHECK_THROW(collection.erase(collection.begin()), std::logic_error);
+}
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNonEmptyCollection_WhenErasingEnd_ThenOperationThrows,
-//                               T,
-//                               TestedTypes)
-// {
-//   LinearCollection<T> collection = { 20, 16 };
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNonEmptyCollection_WhenErasingEnd_ThenOperationThrows,
+                              T,
+                              TestedTypes)
+{
+  LinearCollection<T> collection = { 20, 16 };
 
-//   BOOST_CHECK_THROW(collection.erase(end(collection)), std::out_of_range);
-// }
+  BOOST_CHECK_THROW(collection.erase(end(collection)), std::logic_error);
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNonEmptyCollection_WhenErasingBegin_ThenItemIsRemoved,
                               T,

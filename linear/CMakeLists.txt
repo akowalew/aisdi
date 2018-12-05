@@ -3,11 +3,32 @@ project(aisdi_linear CXX)
 
 option(AISDI_LINEAR_BUILD_TESTS "Build tests for project" ON)
 
+enable_testing()
+
 add_library(aisdi_linear INTERFACE)
+
+if(CMAKE_BUILD_TYPE MATCHES Release)
+	message(STATUS "Adding GSL_UNENFORCED_ON_CONTRACT_VIOLATION definition...")
+	target_compile_definitions(aisdi_linear
+		INTERFACE
+			GSL_UNENFORCED_ON_CONTRACT_VIOLATION
+	)
+elseif(CMAKE_BUILD_TYPE )
+	message(STATUS "Adding GSL_THROW_ON_CONTRACT_VIOLATION definition...")
+	target_compile_definitions(aisdi_linear
+		INTERFACE
+			GSL_THROW_ON_CONTRACT_VIOLATION
+	)
+endif()
 
 target_include_directories(aisdi_linear
 	INTERFACE
 		${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(aisdi_linear
+	INTERFACE
+		GSL
 )
 
 target_compile_features(aisdi_linear
@@ -31,7 +52,5 @@ target_compile_features(aisdi_linear
 )
 
 if(AISDI_LINEAR_BUILD_TESTS)
-	enable_testing()
-
 	add_subdirectory(test)
 endif()

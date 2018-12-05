@@ -2,11 +2,12 @@
 
 #include <algorithm>
 #include <memory>
-#include <cassert>
 #include <initializer_list>
 #include <iterator>
 
 #include "aisdi/util.hpp"
+
+#include "gsl/gsl_assert"
 
 namespace aisdi {
 
@@ -38,8 +39,8 @@ public:
 		std::copy(ilist.begin(), ilist.end(), begin());
 
 		// Postconditions
-		assert(_size == ilist.size());
-		assert(_capacity == _size);
+		Ensures(_size == ilist.size());
+		Ensures(_capacity == _size);
 	}
 
 	Vector(const Vector& other)
@@ -50,8 +51,8 @@ public:
 		std::copy(other.begin(), other.end(), begin());
 
 		// Postconditions
-		assert(_size == other.size());
-		assert(_capacity == other._capacity);
+		Ensures(_size == other.size());
+		Ensures(_capacity == other._capacity);
 	}
 
 	Vector(Vector&& other) noexcept
@@ -184,8 +185,8 @@ public:
 	front()
 	{
 		// Preconditions
-		assert(_size > 0);
-		assert(_buffer);
+		Expects(_size > 0);
+		Expects(_buffer);
 
 		return _buffer[0];
 	}
@@ -200,8 +201,8 @@ public:
 	back()
 	{
 		// Preconditions
-		assert(_size > 0);
-		assert(_buffer);
+		Expects(_size > 0);
+		Expects(_buffer);
 
 		return _buffer[_size - 1];
 	}
@@ -235,7 +236,7 @@ public:
 	{
 		// NOTE: Basic exception safety
 		// Preconditions
-		assert(_size > 0);
+		Expects(_size > 0);
 
 		const auto result = back();
 
@@ -251,7 +252,7 @@ public:
 	{
 		// NOTE: Basic exception safety
 		// Preconditions
-		assert(_size > 0);
+		Expects(_size > 0);
 
 		const auto result = front();
 
@@ -293,7 +294,7 @@ private:
 	insertImpl(iterator pos, const T& value)
 	{
 		// Preconditions
-		assert(std::distance(begin(), pos) >= 0
+		Expects(std::distance(begin(), pos) >= 0
 			&& std::distance(pos, end()) >= 0);
 
 		// NOTE: Basic exception safety
@@ -316,7 +317,7 @@ private:
 		else
 		{
 			// Preconditions
-			assert(_buffer);
+			Expects(_buffer);
 
 			std::move_backward(pos, end(), end() + 1);
 			*pos = value;
@@ -336,11 +337,11 @@ private:
 
 		// NOTE: Basic exception safety
 		// Preconditions
-		assert(std::distance(begin(), first) >= 0
+		Expects(std::distance(begin(), first) >= 0
 			&& std::distance(first, end()) >= 0);
-		assert(std::distance(begin(), last) >= 0
+		Expects(std::distance(begin(), last) >= 0
 			&& std::distance(last, end()) >= 0);
-		assert(std::distance(first, last) >= 0);
+		Expects(std::distance(first, last) >= 0);
 
 		const auto afterLastMoved = std::move(last, end(), first);
 		util::destroy(afterLastMoved, end());

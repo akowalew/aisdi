@@ -2,9 +2,10 @@
 
 #include <algorithm>
 #include <memory>
-#include <cassert>
 #include <initializer_list>
 #include <iterator>
+
+#include "gsl/gsl_assert"
 
 namespace aisdi {
 
@@ -34,8 +35,8 @@ public:
 		_tail.prev = &_head;
 
 		// Postconditions
-		assert(empty());
-		assert(size() == 0);
+		Ensures(empty());
+		Ensures(size() == 0);
 	}
 
 	~List()
@@ -86,8 +87,8 @@ public:
 			other._size = 0;
 
 			// Postconditions
-			assert(other.empty());
-			assert(other.size() == 0);
+			Ensures(other.empty());
+			Ensures(other.size() == 0);
 		}
 
 		return *this;
@@ -175,8 +176,8 @@ public:
 	front()
 	{
 		// Preconditions
-		assert(_size > 0);
-		assert(_head.next);
+		Expects(_size > 0);
+		Expects(_head.next);
 
 		return reinterpret_cast<Node*>(_head.next)->data;
 	}
@@ -191,8 +192,8 @@ public:
 	back()
 	{
 		// Preconditions
-		assert(_size > 0);
-		assert(_tail.prev);
+		Expects(_size > 0);
+		Expects(_tail.prev);
 
 		return reinterpret_cast<Node*>(_tail.prev)->data;
 	}
@@ -258,7 +259,7 @@ public:
 		auto nextNode = const_cast<BasicNode*>(pos._node);
 
 		// Preconditions
-		assert(nextNode);
+		Expects(nextNode);
 
 		const auto prevNode = nextNode->prev;
 		auto newNode = new Node(prevNode, nextNode, value);
@@ -274,7 +275,7 @@ public:
 	{
 		// NOTE: Basic exception safety
 		// Preconditions
-		assert(_size > 0);
+		Expects(_size > 0);
 
 		const auto result = back();
 		const auto last = cend();
@@ -289,7 +290,7 @@ public:
 	{
 		// NOTE: Basic exception safety
 		// Preconditions
-		assert(_size > 0);
+		Expects(_size > 0);
 
 		const auto result = front();
 		const auto first = cbegin();
@@ -315,16 +316,16 @@ public:
 
 		auto node = const_cast<BasicNode*>(first._node);
 		auto lastNode = const_cast<BasicNode*>(last._node);
-		assert(node);
-		assert(lastNode);
+		Expects(node);
+		Expects(lastNode);
 
 		auto prevNode = node->prev;
-		assert(prevNode); // prevNode should not be the head
+		Expects(prevNode); // prevNode should not be the head
 
 		while(node != lastNode)
 		{
 			auto nextNode = node->next;
-			assert(nextNode);
+			Expects(nextNode);
 
 			delete reinterpret_cast<Node*>(node);
 			node = nextNode;
@@ -426,7 +427,7 @@ public:
 		:	_node(node)
 	{
 		// Pre/Postconditions
-		assert(node);
+		Expects(node);
 	}
 
 	const BasicNode*
@@ -439,7 +440,7 @@ public:
 	operator*() const
 	{
 		// Preconditions
-		assert(_node->next); // Is not a tail
+		Expects(_node->next); // Is not a tail
 
 		return reinterpret_cast<const Node*>(_node)->data;
 	}
@@ -454,7 +455,7 @@ public:
 	operator++()
 	{
 		// Preconditions
-		assert(_node->next);
+		Expects(_node->next);
 
 		_node = _node->next;
 		return *this;
@@ -464,7 +465,7 @@ public:
 	operator++(int)
 	{
 		// Preconditions
-		assert(_node->next);
+		Expects(_node->next);
 
 		const auto result = *this;
 		_node = _node->next;
@@ -475,7 +476,7 @@ public:
 	operator--()
 	{
 		// Preconditions
-		assert(_node->prev->prev); // Is not a head
+		Expects(_node->prev->prev); // Is not a head
 
 		_node = _node->prev;
 		return *this;
@@ -485,7 +486,7 @@ public:
 	operator--(int)
 	{
 		// Preconditions
-		assert(_node->prev->prev); // Is not a head
+		Expects(_node->prev->prev); // Is not a head
 
 		const auto result = *this;
 		_node = _node->prev;
