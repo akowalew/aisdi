@@ -3,10 +3,6 @@ project(aisdi_linear CXX)
 
 option(AISDI_LINEAR_BUILD_TESTS "Build tests for project" ON)
 
-if(AISDI_LINEAR_BUILD_TESTS)
-	enable_testing()
-endif()
-
 add_library(aisdi_linear INTERFACE)
 
 target_include_directories(aisdi_linear
@@ -35,11 +31,7 @@ target_compile_features(aisdi_linear
 )
 
 if(AISDI_LINEAR_BUILD_TESTS)
-	set(BUILD_HAYAI_SAMPLES OFF CACHE BOOL "Don't build hayai samples")
-	set(BUILD_HAYAI_TESTS OFF CACHE BOOL "Don't build hayai tests")
-	set(INSTALL_HAYAI OFF CACHE BOOL "Don't install hayai at build")
-	add_subdirectory(submodules/hayai)
-	include_directories(submodules/hayai/src)
+	enable_testing()
 
 	add_subdirectory(test)
 endif()

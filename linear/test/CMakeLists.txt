@@ -7,7 +7,7 @@ function(addUnitTest NAME)
 		${NAME}.cpp
 	)
 
-	add_test(NAME ${NAME} 
+	add_test(NAME ${NAME}
 		COMMAND ${NAME})
 
 	target_include_directories(${NAME}
@@ -50,6 +50,11 @@ function(addBenchmark NAME)
 		PRIVATE
 			aisdi_linear
 			hayai_main
+	)
+
+	target_include_directories(${NAME}
+		PRIVATE
+			${CMAKE_SOURCE_DIR}/submodules/hayai/src
 	)
 
 	target_compile_options(${NAME}
