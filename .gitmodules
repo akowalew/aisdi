@@ -1,3 +1,6 @@
 [submodule "submodules/hayai"]
 	path = submodules/hayai
 	url = https://github.com/nickbruun/hayai.git
+[submodule "submodules/gsl"]
+	path = submodules/gsl
+	url = https://github.com/microsoft/gsl
