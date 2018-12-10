@@ -11,7 +11,7 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
 		INTERFACE
 			GSL_UNENFORCED_ON_CONTRACT_VIOLATION
 	)
-elseif(CMAKE_BUILD_TYPE )
+else()
 	message(STATUS "Adding GSL_THROW_ON_CONTRACT_VIOLATION definition...")
 	target_compile_definitions(aisdi_linear
 		INTERFACE
