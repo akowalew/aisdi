@@ -336,8 +336,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEndIterator_WhenDereferencing_ThenOperationTh
 
   BOOST_CHECK_THROW(*map.end(), std::logic_error);
   BOOST_CHECK_THROW(*map.cend(), std::logic_error);
-  BOOST_CHECK_THROW(map.end()->first, std::logic_error);
-  BOOST_CHECK_THROW(map.cend()->second, std::logic_error);
+  BOOST_CHECK_THROW(static_cast<void>(map.end()->first), std::logic_error);
+  BOOST_CHECK_THROW(static_cast<void>(map.cend()->second), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenConstIterator_WhenDereferencing_ThenItemIsReturned,

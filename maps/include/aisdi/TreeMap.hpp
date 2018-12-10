@@ -6,6 +6,7 @@
 #include <memory>
 #include <stdexcept>
 
+#include <gsl/pointers>
 #include <gsl/gsl_assert>
 
 namespace aisdi {
@@ -50,12 +51,9 @@ public:
     }
 
     TreeMap(TreeMap&& other)
-        :   root_{nullptr, other.root_.left, nullptr}
-        ,   first_{(other.first_ != &other.root_) ? other.first_ : &root_}
-        ,   comp_{Compare{}}
-        ,   size_{other.size_}
+        :   TreeMap()
     {
-        other.repair();
+        *this = std::move(other);
 
         Ensures(other.empty());
         Ensures(other.size() == 0);
@@ -91,10 +89,13 @@ public:
             clear();
 
             root_.left = other.root_.left;
-            first_ = (other.first_ != &other.root_) ? other.first_ : &root_;
+            first_ = (other.first_ != &other.root_) ? other.first_ : gsl::make_not_null(&root_);
             size_ = other.size_;
-
             other.repair();
+            if(root_.left)
+            {
+                root_.left->parent = &root_;
+            }
         }
 
         Ensures(other.empty());
@@ -146,16 +147,13 @@ public:
 
     void clear() noexcept
     {
-        Expects(first_);
         auto node = first_;
-
         while(true)
         {
-            Expects(node);
             while(node->parent && !node->right)
             {
-                const auto parent = node->parent;
-                delete static_cast<Node*>(node);
+                const auto parent = gsl::make_not_null(node->parent);
+                delete static_cast<Node*>(node.get());
                 node = parent;
             }
 
@@ -164,15 +162,9 @@ public:
                 break;
             }
 
-            Expects(node->right);
-            const auto next = node->right;
+            const auto next = gsl::make_not_null(node->right);
             node->right = nullptr;
-            node = next;
-
-            while(node->left)
-            {
-                node = node->left;
-            }
+            node = next->leftmost();
         }
 
         repair();
@@ -184,17 +176,14 @@ public:
 
     iterator erase(const iterator& pos)
     {
-        Expects(pos != end());
-        Expects(pos.node_);
-        const auto node = pos.node_;
-        auto left = node->left;
-        auto right = node->right;
+        Expects(pos != end()); // Implies also (node->parent) precondition
 
         const auto result = std::next(pos);
+        const auto node = gsl::make_not_null(pos.node_);
+        const auto parent = gsl::make_not_null(node->parent);
 
-        Expects(node->parent);
-        const auto parent = node->parent;
-
+        auto left = node->left;
+        auto right = node->right;
         BasicNode* next = nullptr;
 
         if(left)
@@ -208,13 +197,7 @@ public:
             }
             else
             {
-                auto notLess = right;
-                while(notLess->left)
-                {
-                    notLess = notLess->left;
-                }
-
-                notLess->left = rightOfNext;
+                right->leftmost()->left = rightOfNext;
             }
 
             next->right = right;
@@ -222,8 +205,35 @@ public:
         else if(right)
         {
             next = right;
+            // const auto leftOfNext = next->left;
 
-            // TODO: balance this
+            // if(!left)
+            // {
+            //     left = leftOfNext;
+            // }
+            // else
+            // {
+            //     left->rightmost()->right = leftOfNext;
+            // }
+
+            // next->left = left;
+        }
+
+        if(parent->left == node)
+        {
+            parent->left = next;
+            if(node == first_)
+            {
+                first_ = (next) ? next->leftmost() : parent;
+            }
+        }
+        else
+        {
+            parent->right = next;
+            // if(node == last_)
+            // {
+            //     last_ = (next) ? next->rightmost() : parent;
+            // }
         }
 
         if(next)
@@ -231,34 +241,7 @@ public:
             next->parent = parent;
         }
 
-        if(parent->left == node)
-        {
-            parent->left = next;
-
-            if(node == first_)
-            {
-                if(!next)
-                {
-                    first_ = parent;
-                }
-                else
-                {
-                    auto node = next;
-                    while(node->left)
-                    {
-                        node = node->left;
-                    }
-
-                    first_ = node;
-                }
-            }
-        }
-        else
-        {
-            parent->right = next;
-        }
-
-        delete static_cast<Node*>(node);
+        delete static_cast<Node*>(node.get());
         --size_;
         return result;
     }
@@ -277,26 +260,15 @@ public:
 
     iterator find(const key_type& key)
     {
-        auto node = root_.left;
-        while(node)
+        const auto result = locate(key);
+        const auto status = result.first;
+        if(status == LocateStatus::Found)
         {
-            Expects(node->parent); // Is not the end(), root_
-            const auto& nodeKey = static_cast<Node*>(node)->key();
-            if(nodeKey == key)
-            {
-                break;
-            }
-            else if(comp_(key, nodeKey))
-            {
-                node = node->left;
-            }
-            else
-            {
-                node = node->right;
-            }
+            const auto node = result.second;
+            return iterator{node};
         }
 
-        return node ? iterator{node} : end();
+        return end();
     }
 
     const_iterator find(const key_type& key) const
@@ -354,7 +326,6 @@ public:
     {
         auto result = locate(key);
         auto status = result.first;
-        Expects(result.second);
         if(status == LocateStatus::Found)
         {
             const auto node = result.second;
@@ -362,10 +333,12 @@ public:
         }
 
         auto parent = result.second;
-        const auto node = new Node(parent,
-                                   std::piecewise_construct,
-                                   std::forward_as_tuple(key),
-                                   std::forward_as_tuple(std::forward<Args>(args)...));
+        const auto node =
+            gsl::make_not_null(
+                new Node(parent,
+                         std::piecewise_construct,
+                         std::forward_as_tuple(key),
+                         std::forward_as_tuple(std::forward<Args>(args)...)));
 
         if(status == LocateStatus::IsLess)
         {
@@ -379,6 +352,11 @@ public:
         else
         {
             parent->right = node;
+
+            // if(parent == last_)
+            // {
+            //     last_ = node;
+            // }
         }
 
         ++size_;
@@ -401,6 +379,60 @@ private:
         BasicNode* parent = nullptr;
         BasicNode* left = nullptr;
         BasicNode* right = nullptr;
+
+        gsl::not_null<BasicNode*> leftmost()
+        {
+            auto node = gsl::make_not_null(this);
+            while(node->left)
+            {
+                node = gsl::make_not_null(node->left);
+            }
+
+            return node;
+        }
+
+        gsl::not_null<BasicNode*> rightmost()
+        {
+            auto node = gsl::make_not_null(this);
+            while(node->right)
+            {
+                node = gsl::make_not_null(node->right);
+            }
+
+            return node;
+        }
+
+        gsl::not_null<BasicNode*> leftparent()
+        {
+            auto node = gsl::make_not_null(this);
+            while(true)
+            {
+                const auto prev = node;
+                node = gsl::make_not_null(node->parent); // Also, was not the end()
+                if(node->right != prev)
+                {
+                    break;
+                }
+            }
+
+            return node;
+        }
+
+        gsl::not_null<BasicNode*> rightparent()
+        {
+            auto node = gsl::make_not_null(this);
+            while(true)
+            {
+                const auto prev = node;
+                node = gsl::make_not_null(node->parent); // Also, was not the end()
+                if(node->left != prev)
+                {
+                    break;
+                }
+            }
+
+            return node;
+        }
     };
 
     struct Node
@@ -437,30 +469,33 @@ private:
         IsGreater
     };
 
-    std::pair<LocateStatus, BasicNode*> locate(const key_type& key)
+    std::pair<LocateStatus, gsl::not_null<BasicNode*>> locate(const key_type& key)
     {
-        auto parent = &root_;
+        auto parent = gsl::make_not_null(&root_);
         auto node = parent->left;
         auto status = LocateStatus::IsLess;
+
         while(node)
         {
-            Expects(node->parent); // Is not the end(), root_
-            const auto& nodeKey = static_cast<Node*>(node)->key();
+            const auto current = gsl::make_not_null(node);
+
+            Expects(current->parent); // Is not the end()
+            const auto& nodeKey = static_cast<Node*>(current.get())->key();
             if(nodeKey == key)
             {
-                return std::make_pair(LocateStatus::Found, node);
+                return std::make_pair(LocateStatus::Found, current);
             }
 
-            parent = node;
+            parent = current;
             if(comp_(key, nodeKey))
             {
                 status = LocateStatus::IsLess;
-                node = node->left;
+                node = current->left;
             }
             else
             {
                 status = LocateStatus::IsGreater;
-                node = node->right;
+                node = current->right;
             }
         }
 
@@ -470,12 +505,12 @@ private:
     void repair()
     {
         root_.left = nullptr;
-        first_ = &root_;
+        first_ = gsl::make_not_null(&root_);
         size_ = 0;
     }
 
     BasicNode root_;
-    BasicNode* first_ = &root_;
+    gsl::not_null<BasicNode*> first_ = gsl::make_not_null(&root_);
     Compare comp_ = Compare{};
     size_type size_ = 0;
 };
@@ -517,10 +552,9 @@ public:
 
     reference operator*() const
     {
-        Expects(node_);
-        Expects(node_->parent); // Is not then end(), root_
-
-        return static_cast<Node*>(node_)->value;
+        const auto node = gsl::make_not_null(node_);
+        Expects(node->parent); // Is not the end()
+        return static_cast<Node*>(node.get())->value;
     }
 
     pointer operator->() const
@@ -530,31 +564,14 @@ public:
 
     ConstIterator& operator++()
     {
-        Expects(node_);
-
-        auto node = node_;
+        auto node = gsl::make_not_null(node_);
         if(node->right)
         {
-            node = node->right;
-            while(node->left)
-            {
-                node = node->left;
-            }
+            node = node->right->leftmost();
         }
         else
         {
-            while(true)
-            {
-                Expects(node->parent); // Also, was not the last (most-right), end(), root_
-                if(node->parent->right != node)
-                {
-                    break;
-                }
-
-                node = node->parent;
-            }
-
-            node = node->parent;
+            node = node->leftparent();
         }
 
         node_ = node;
@@ -570,31 +587,14 @@ public:
 
     ConstIterator& operator--()
     {
-        Expects(node_);
-
-        auto node = node_;
+        auto node = gsl::make_not_null(node_);
         if(node->left)
         {
-            node = node->left;
-            while(node->right)
-            {
-                node = node->right;
-            }
+            node = node->left->rightmost();
         }
         else
         {
-            while(true)
-            {
-                Expects(node->parent); // Also, was not the first (most-left)
-                if(node->parent->left != node)
-                {
-                    break;
-                }
-
-                node = node->parent;
-            }
-
-            node = node->parent;
+            node = node->rightparent();
         }
 
         node_ = node;
