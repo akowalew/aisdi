@@ -184,7 +184,7 @@ public:
 
         auto left = node->left;
         auto right = node->right;
-        BasicNode* next = nullptr;
+        Node* next = nullptr;
 
         if(left)
         {
@@ -340,7 +340,7 @@ public:
                          std::forward_as_tuple(key),
                          std::forward_as_tuple(std::forward<Args>(args)...)));
 
-        if(status == LocateStatus::IsLess)
+        if(status == LocateStatus::OnLeft)
         {
             parent->left = node;
 
@@ -374,11 +374,13 @@ public:
     }
 
 private:
+    struct Node; // Forward declaration
+
     struct BasicNode
     {
         BasicNode* parent = nullptr;
-        BasicNode* left = nullptr;
-        BasicNode* right = nullptr;
+        Node* left = nullptr;
+        Node* right = nullptr;
 
         gsl::not_null<BasicNode*> leftmost()
         {
@@ -439,7 +441,7 @@ private:
         :   public BasicNode
     {
         template<typename... Args>
-        Node(BasicNode* parent, Args&&... args)
+        Node(gsl::not_null<BasicNode*> parent, Args&&... args)
             :   BasicNode{parent, nullptr, nullptr}
             ,   value{std::forward<Args>(args)...}
         {}
@@ -465,15 +467,15 @@ private:
     enum class LocateStatus
     {
         Found,
-        IsLess,
-        IsGreater
+        OnLeft,
+        OnRight
     };
 
     std::pair<LocateStatus, gsl::not_null<BasicNode*>> locate(const key_type& key)
     {
         auto parent = gsl::make_not_null(&root_);
         auto node = parent->left;
-        auto status = LocateStatus::IsLess;
+        auto status = LocateStatus::OnLeft;
 
         while(node)
         {
@@ -489,12 +491,12 @@ private:
             parent = current;
             if(comp_(key, nodeKey))
             {
-                status = LocateStatus::IsLess;
+                status = LocateStatus::OnLeft;
                 node = current->left;
             }
             else
             {
-                status = LocateStatus::IsGreater;
+                status = LocateStatus::OnRight;
                 node = current->right;
             }
         }
