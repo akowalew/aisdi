@@ -277,6 +277,34 @@ public:
 			const_cast<iterator>(last));
 	}
 
+	void resize(size_type count)
+	{
+		if(count < _size)
+		{
+			const auto first = std::next(begin(), count);
+			const auto last = end();
+			erase(first, last);
+			return;
+		}
+
+		if(count > _capacity)
+		{
+			auto newBuffer = std::make_unique<T[]>(count);
+			std::move(begin(), end(), newBuffer.get());
+			_buffer = std::move(newBuffer);
+			_capacity = count;
+		}
+
+		_size = count;
+		const auto last = end();
+		const auto first = std::prev(last, count);
+		std::for_each(first, last,
+			[](auto& item)
+			{
+				new (&item) T;
+			});
+	}
+
 	size_type
 	size() const noexcept
 	{
