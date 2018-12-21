@@ -73,8 +73,6 @@ public:
 
     using iterator = Iterator;
     using const_iterator = ConstIterator;
-    using local_iterator = BucketIterator;
-    using const_local_iterator = ConstBucketIterator;
     using node_type = Node;
 
     explicit HashMap(size_type bucketCount = DefaultBucketCount)
@@ -181,9 +179,9 @@ public:
 
     iterator erase(const const_iterator& pos)
     {
-        auto bucketPos = const_cast<Bucket*>(pos.bucketPos_);
+        auto bucketPos = pos.bucketPos_;
         auto nodePos = pos.nodePos_;
-        auto nextNodePos = const_cast<Bucket&>(*bucketPos).erase(nodePos);
+        auto nextNodePos = bucketPos->erase(nodePos);
         --size_;
         const auto lastBucketPos = std::prev(hashTable_.end());
         while((nextNodePos == bucketPos->end())
@@ -348,7 +346,8 @@ private:
     {
         const auto bucketIndex = bucket(key);
         Ensures(bucketIndex < bucket_count());
-        const auto bucketPos = std::next(hashTable_.begin(), static_cast<difference_type>(bucketIndex));
+        const auto bucketPos = std::next(hashTable_.begin(),
+                                         static_cast<difference_type>(bucketIndex));
         Ensures(bucketPos != hashTable_.end());
         return bucketPos;
     }
@@ -405,8 +404,8 @@ public:
     using pointer = typename HashMap::const_pointer;
     using reference = typename HashMap::const_reference;
 
-    ConstIterator(ConstBucketIterator bucketPos,
-                  ConstNodeIterator nodePos,
+    ConstIterator(BucketIterator bucketPos,
+                  NodeIterator nodePos,
                   const HashMap& hashMap)
         :   bucketPos_(bucketPos)
         ,   nodePos_(nodePos)
@@ -478,8 +477,8 @@ public:
     }
 
 private:
-    ConstBucketIterator bucketPos_;
-    ConstNodeIterator nodePos_;
+    BucketIterator bucketPos_;
+    NodeIterator nodePos_;
     const HashMap& hashMap_;
 };
 

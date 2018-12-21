@@ -205,18 +205,6 @@ public:
         else if(right)
         {
             next = right;
-            // const auto leftOfNext = next->left;
-
-            // if(!left)
-            // {
-            //     left = leftOfNext;
-            // }
-            // else
-            // {
-            //     left->rightmost()->right = leftOfNext;
-            // }
-
-            // next->left = left;
         }
 
         if(parent->left == node)
@@ -230,10 +218,6 @@ public:
         else
         {
             parent->right = next;
-            // if(node == last_)
-            // {
-            //     last_ = (next) ? next->rightmost() : parent;
-            // }
         }
 
         if(next)

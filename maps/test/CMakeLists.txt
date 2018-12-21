@@ -39,3 +39,32 @@ target_compile_options(aisdi_maps_tests
 add_test(TreeMapTests aisdi_maps_tests --run_test=TreeMapTests)
 add_test(HashMapTests aisdi_maps_tests --run_test=HashMapTests)
 
+
+# Benchmarks
+
+function(addBenchmark NAME)
+	add_executable(${NAME}
+		${NAME}.cpp
+	)
+
+	target_link_libraries(${NAME}
+		PRIVATE
+			aisdi_maps
+			hayai_main
+	)
+
+	target_include_directories(${NAME}
+		PRIVATE
+			${CMAKE_SOURCE_DIR}/submodules/hayai/src
+	)
+
+	target_compile_options(${NAME}
+		PRIVATE
+			-Wall
+			-Wextra
+			-pedantic
+	)
+endfunction()
+
+addBenchmark(TreeMapBenchmark)
+addBenchmark(HashMapBenchmark)
