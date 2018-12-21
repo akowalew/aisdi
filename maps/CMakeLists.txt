@@ -22,11 +22,13 @@ endif()
 target_include_directories(aisdi_maps
 	INTERFACE
 		${CMAKE_CURRENT_SOURCE_DIR}/include
+		${CMAKE_SOURCE_DIR}/linear/include
 )
 
 target_link_libraries(aisdi_maps
 	INTERFACE
 		GSL
+		aisdi_linear
 )
 
 target_compile_features(aisdi_maps

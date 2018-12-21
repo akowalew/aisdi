@@ -28,6 +28,12 @@ target_compile_options(aisdi_maps_tests
 		-Wall
 		-Wextra
 		-pedantic
+		-Wcast-align
+		-Wunused
+		-Wpedantic
+		-Wconversion
+		-Wsign-conversion
+		-Wnull-dereference
 )
 
 add_test(TreeMapTests aisdi_maps_tests --run_test=TreeMapTests)
