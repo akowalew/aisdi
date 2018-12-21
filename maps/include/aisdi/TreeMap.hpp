@@ -37,6 +37,7 @@ public:
 
     TreeMap()
     {
+        // Postconditions
         Ensures(empty());
         Ensures(size() == 0);
         Ensures(begin() == end());
@@ -336,11 +337,6 @@ public:
         else
         {
             parent->right = node;
-
-            // if(parent == last_)
-            // {
-            //     last_ = node;
-            // }
         }
 
         ++size_;

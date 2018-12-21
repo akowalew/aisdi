@@ -642,14 +642,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNotEmptyMap_WhenChangingValueOfAKey_ThenValue
   thenMapContainsItems(map, { { 42, "Chuck" }, { 27, "Bob" } });
 }
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenRemovingValueByKey_ThenExceptionIsThrown,
-//                               K,
-//                               TestedKeyTypes)
-// {
-//   Map<K> map;
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenRemovingValueByKey_ThenZeroIsReturned,
+                              K,
+                              TestedKeyTypes)
+{
+  Map<K> map;
 
-//   BOOST_CHECK_THROW(map.erase(1), std::logic_error);
-// }
+  BOOST_CHECK_EQUAL(map.erase(1), 0);
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenRemovingValueByKey_ThenRemovedItemsCountIsZero,
                               K,
@@ -660,14 +660,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenRemovingValueByKey_ThenRemovedIt
   BOOST_CHECK_EQUAL(map.erase(1), 0);
 }
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNotEmptyMap_WhenRemovingValueByWrongKey_ThenExceptionIsThrown,
-//                               K,
-//                               TestedKeyTypes)
-// {
-//   Map<K> map = { { 42, "Alice" }, { 27, "Bob" } };
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNotEmptyMap_WhenRemovingValueByWrongKey_ThenZeroIsReturned,
+                              K,
+                              TestedKeyTypes)
+{
+  Map<K> map = { { 42, "Alice" }, { 27, "Bob" } };
 
-//   BOOST_CHECK_THROW(map.erase(1), std::logic_error);
-// }
+  BOOST_CHECK_EQUAL(map.erase(1), 0);
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNonEmptyMap_WhenRemovingValueByWrongKey_ThenRemovedItemsCountIsZero,
                               K,

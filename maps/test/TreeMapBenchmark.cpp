@@ -18,6 +18,7 @@ BENCHMARK_F(InsertionBenchmark, AccessTest, 10, Iterations)
     container[rand() % 1000000000] = (rand() % 10000);
 }
 
+
 class ErasingBenchmark
     :   public ::hayai::Fixture
 {
@@ -43,6 +44,7 @@ BENCHMARK_F(ErasingBenchmark, PopBackTest, 10, Iterations)
     container.erase(std::prev(container.end()));
 }
 
+
 class CopyingBenchmark
     :   public ::hayai::Fixture
 {
@@ -63,6 +65,7 @@ BENCHMARK_F(CopyingBenchmark, CopyConstructorTest, 100, 1)
     auto other = container;
     static_cast<void>(other);
 }
+
 
 class SearchingBenchmark
     :   public ::hayai::Fixture
