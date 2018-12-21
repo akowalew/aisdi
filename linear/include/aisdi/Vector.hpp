@@ -1,9 +1,10 @@
-#pragma once
+#ifndef AISDI_VECTOR_HPP
+#define AISDI_VECTOR_HPP
 
 #include <algorithm>
-#include <memory>
 #include <initializer_list>
 #include <iterator>
+#include <memory>
 
 #include "aisdi/util.hpp"
 
@@ -63,6 +64,8 @@ public:
 		other._size = 0;
 		other._capacity = 0;
 	}
+
+	~Vector() = default;
 
 	Vector&
 	operator=(const Vector& other)
@@ -342,17 +345,15 @@ private:
 			_size = newSize;
 			return newPos;
 		}
-		else
-		{
-			// Preconditions
-			Expects(_buffer);
 
-			std::move_backward(pos, end(), end() + 1);
-			*pos = value;
+		// Preconditions
+		Expects(_buffer);
 
-			_size = newSize;
-			return pos;
-		}
+		std::move_backward(pos, end(), end() + 1);
+		*pos = value;
+
+		_size = newSize;
+		return pos;
 	}
 
 	iterator
@@ -406,3 +407,5 @@ operator!=(const Vector<T>& lhs, const Vector<T>& rhs)
 }
 
 } // namespace aisdi
+
+#endif

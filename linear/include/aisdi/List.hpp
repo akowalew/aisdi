@@ -1,9 +1,10 @@
-#pragma once
+#ifndef AISDI_LIST_HPP
+#define AISDI_LIST_HPP
 
 #include <algorithm>
-#include <memory>
 #include <initializer_list>
 #include <iterator>
+#include <memory>
 
 #include "gsl/gsl_assert"
 
@@ -68,7 +69,7 @@ public:
 	}
 
 	List&
-	operator=(List&& other)
+	operator=(List&& other) noexcept
 	{
 		if(this != &other)
 		{
@@ -179,7 +180,7 @@ public:
 		Expects(_size > 0);
 		Expects(_head.next);
 
-		return reinterpret_cast<Node*>(_head.next)->data;
+		return static_cast<Node*>(_head.next)->data;
 	}
 
 	const_reference
@@ -195,7 +196,7 @@ public:
 		Expects(_size > 0);
 		Expects(_tail.prev);
 
-		return reinterpret_cast<Node*>(_tail.prev)->data;
+		return static_cast<Node*>(_tail.prev)->data;
 	}
 
 	const_reference
@@ -233,7 +234,7 @@ public:
 		while(node->next)
 		{
 			const auto next = node->next;
-			delete reinterpret_cast<Node*>(node);
+			delete static_cast<Node*>(node);
 			node = next;
 		}
 
@@ -330,7 +331,7 @@ public:
 			auto nextNode = node->next;
 			Expects(nextNode);
 
-			delete reinterpret_cast<Node*>(node);
+			delete static_cast<Node*>(node);
 			node = nextNode;
 
 			_size--;
@@ -426,7 +427,7 @@ public:
 	using reference = typename List::const_reference;
 	using const_reference = typename List::const_reference;
 
-	ConstIterator(const BasicNode* node)
+	explicit ConstIterator(const BasicNode* node)
 		:	_node(node)
 	{
 		// Pre/Postconditions
@@ -512,7 +513,7 @@ public:
 	operator-(difference_type n) const
 	{
 		auto result = *this;
-		while(n--)
+		while(n-- != 0)
 		{
 			--result;
 		}
@@ -546,12 +547,8 @@ public:
 	using pointer = typename List::pointer;
 	using reference = typename List::reference;
 
-	Iterator(BasicNode* node)
+	explicit Iterator(BasicNode* node)
 		:	ConstIterator(node)
-	{}
-
-	Iterator(const ConstIterator& other)
-		:	ConstIterator(other)
 	{}
 
 	BasicNode*
@@ -609,3 +606,5 @@ public:
 };
 
 } // namespace aisdi
+
+#endif

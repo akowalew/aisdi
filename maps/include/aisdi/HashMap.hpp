@@ -1,10 +1,10 @@
-#pragma once
+#ifndef AISDI_HASHMAP_HPP
+#define AISDI_HASHMAP_HPP
 
-#include <cstdint>
-#include <utility>
 #include <algorithm>
-#include <stdexcept>
 #include <iterator>
+#include <stdexcept>
+#include <utility>
 
 #include <gsl/gsl_assert>
 
@@ -101,7 +101,7 @@ public:
         *this = other;
     }
 
-    HashMap(HashMap&& other)
+    HashMap(HashMap&& other) noexcept
     {
         *this = std::move(other);
     }
@@ -125,7 +125,7 @@ public:
         return *this;
     }
 
-    HashMap& operator=(HashMap&& other)
+    HashMap& operator=(HashMap&& other) noexcept
     {
         if(&other != this)
         {
@@ -541,3 +541,5 @@ public:
 };
 
 } // namespace aisdi
+
+#endif

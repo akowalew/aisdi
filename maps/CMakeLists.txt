@@ -51,6 +51,16 @@ target_compile_features(aisdi_maps
 		cxx_static_assert
 )
 
+add_library(aisdi_maps_compiled
+	src/TreeMapCompiled.cpp
+	src/HashMapCompiled.cpp
+)
+
+target_link_libraries(aisdi_maps_compiled
+	PRIVATE
+		aisdi_maps
+)
+
 if(AISDI_MAPS_BUILD_TESTS)
 	add_subdirectory(test)
 endif()

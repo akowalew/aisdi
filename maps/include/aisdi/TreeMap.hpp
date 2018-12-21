@@ -1,13 +1,16 @@
+#ifndef AISDI_TREEMAP_HPP
+#define AISDI_TREEMAP_HPP
+
 #pragma once
 
 #include <algorithm>
 #include <iterator>
-#include <utility>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
-#include <gsl/pointers>
 #include <gsl/gsl_assert>
+#include <gsl/pointers>
 
 namespace aisdi {
 
@@ -16,8 +19,6 @@ template<typename Key,
          typename Compare = std::less<Key>>
 class TreeMap
 {
-    using This = TreeMap<Key, T, Compare>;
-
 public:
     class ConstIterator;
     class Iterator;
@@ -51,7 +52,7 @@ public:
         Ensures(*this == other);
     }
 
-    TreeMap(TreeMap&& other)
+    TreeMap(TreeMap&& other) noexcept
         :   TreeMap()
     {
         *this = std::move(other);
@@ -83,7 +84,7 @@ public:
         return *this;
     }
 
-    TreeMap& operator=(TreeMap&& other)
+    TreeMap& operator=(TreeMap&& other) noexcept
     {
         if(this != &other)
         {
@@ -124,14 +125,14 @@ public:
 
     const_iterator begin() const
     {
-        This& self = const_cast<This&>(*this);
+        auto& self = const_cast<TreeMap&>(*this);
         const iterator it = self.begin();
         return it;
     }
 
     const_iterator end() const
     {
-        This& self = const_cast<This&>(*this);
+        auto& self = const_cast<TreeMap&>(*this);
         const iterator it = self.end();
         return it;
     }
@@ -258,7 +259,7 @@ public:
 
     const_iterator find(const key_type& key) const
     {
-        This& self = const_cast<This&>(*this);
+        auto& self = const_cast<TreeMap&>(*this);
         iterator it = self.find(key);
         return it;
     }
@@ -278,7 +279,7 @@ public:
 
     const mapped_type& at(const key_type& key) const
     {
-        return const_cast<This&>(*this).at(key);
+        return const_cast<TreeMap&>(*this).at(key);
     }
 
     mapped_type& operator[](const key_type& key)
@@ -421,7 +422,7 @@ private:
         :   public BasicNode
     {
         template<typename... Args>
-        Node(gsl::not_null<BasicNode*> parent, Args&&... args)
+        explicit Node(gsl::not_null<BasicNode*> parent, Args&&... args)
             :   BasicNode{parent, nullptr, nullptr}
             ,   value{std::forward<Args>(args)...}
         {}
@@ -560,7 +561,7 @@ public:
         return *this;
     }
 
-    ConstIterator operator++(int)
+    const ConstIterator operator++(int)
     {
         const auto result = *this;
         operator++();
@@ -583,7 +584,7 @@ public:
         return *this;
     }
 
-    ConstIterator operator--(int)
+    const ConstIterator operator--(int)
     {
         const auto result = *this;
         operator--();
@@ -633,7 +634,7 @@ public:
         return *this;
     }
 
-    Iterator operator++(int)
+    const Iterator operator++(int)
     {
         const auto result = *this;
         ConstIterator::operator++();
@@ -646,7 +647,7 @@ public:
         return *this;
     }
 
-    Iterator operator--(int)
+    const Iterator operator--(int)
     {
         const auto result = *this;
         ConstIterator::operator--();
@@ -669,4 +670,6 @@ private:
     {}
 };
 
-} // aisdi
+} // namespace aisdi
+
+#endif

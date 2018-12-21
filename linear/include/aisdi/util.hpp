@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AISDI_UTIL_HPP
+#define AISDI_UTIL_HPP
 
 #include <cassert>
 #include <memory>
@@ -24,3 +25,5 @@ destroy(ForwardIt first, ForwardIt last)
 
 } // namespace util
 } // namespace aisdi
+
+#endif
