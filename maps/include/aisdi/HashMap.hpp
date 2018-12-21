@@ -4,11 +4,14 @@
 #include <utility>
 #include <algorithm>
 #include <stdexcept>
+#include <iterator>
 
 #include <gsl/gsl_assert>
 
 #include "aisdi/List.hpp"
 #include "aisdi/Vector.hpp"
+
+namespace aisdi {
 
 template<typename Key,
          typename T,
@@ -35,17 +38,17 @@ public:
 
         const key_type& key() const
         {
-            return value->key;
+            return value.first;
         }
 
         const mapped_type& mapped() const
         {
-            return value->mapped;
+            return value.second;
         }
 
         mapped_type& mapped()
         {
-            return value->mapped;
+            return value.second;
         }
     };
 
@@ -85,8 +88,8 @@ public:
         std::for_each(first, last,
                       [this](const auto& value)
                       {
-                          const auto& key = value->key();
-                          const auto& mapped = value->mapped();
+                          const auto& key = value.first;
+                          const auto& mapped = value.second;
                           operator[](key) = mapped;
                       });
     }
@@ -117,10 +120,6 @@ public:
             size_ = other.size_;
             keyEqual_ = other.keyEqual_;
             hasher_ = other.hasher_;
-
-            const auto firstBucketOffset =
-                std::distance(other.hashTable_.begin(), other.firstBucket_);
-            firstBucket_ = std::next(hashTable_.begin(), firstBucketOffset);
         }
 
         return *this;
@@ -131,7 +130,6 @@ public:
         if(&other != this)
         {
             hashTable_ = std::move(other.hashTable_);
-            firstBucket_ = std::move(other.firstBucket_);
             maxLoadFactor_ = other.maxLoadFactor_;
             size_ = other.size_;
             keyEqual_ = std::move(other.keyEqual_);
@@ -143,23 +141,23 @@ public:
         return *this;
     }
 
-    reference at(const key_type& key)
+    T& at(const key_type& key)
     {
-        const auto pos = find(key);
+        auto pos = find(key);
         if(pos == end())
         {
             throw std::out_of_range("Key not exist");
         }
 
-        return pos->mapped();
+        return pos->second;
     }
 
-    const_reference at(const key_type& key) const
+    const T& at(const key_type& key) const
     {
         return const_cast<HashMap&>(*this).at(key);
     }
 
-    reference operator[](const key_type& key)
+    T& operator[](const key_type& key)
     {
         const auto location = locate(key);
         const auto& bucketPos = location.first; // Replace these two lines in C++17
@@ -174,27 +172,31 @@ public:
                                 std::forward_as_tuple(key),
                                 std::forward_as_tuple(mapped_type{})}};
         const auto insertedNodePos = bucketPos->insert(bucketEnd, node);
+        ++size_;
+
         return insertedNodePos->mapped();
     }
 
     iterator erase(const const_iterator& pos)
     {
-        auto& bucketPos = pos->bucketPos_;
-        auto& nodePos = pos->nodePos_;
-        auto nextNodePos = bucketPos->erase(nodePos);
+        auto bucketPos = const_cast<Bucket*>(pos.bucketPos_);
+        auto nodePos = pos.nodePos_;
+        auto nextNodePos = const_cast<Bucket&>(*bucketPos).erase(nodePos);
+        --size_;
+        const auto lastBucketPos = std::prev(hashTable_.end());
         while((nextNodePos == bucketPos->end())
-            && (bucketPos != hashTable_.end()))
+            && (bucketPos != lastBucketPos))
         {
             ++bucketPos;
             nodePos = bucketPos->begin();
         }
 
-        return iterator{bucketPos, nodePos};
+        return iterator{bucketPos, nodePos, *this};
     }
 
     size_type erase(const key_type& key)
     {
-        const auto pos = find(key);
+        auto pos = find(key);
         if(pos == end())
         {
             return 0;
@@ -215,7 +217,7 @@ public:
             return end();
         }
 
-        return iterator{bucketPos, nodePos};
+        return iterator{bucketPos, nodePos, *this};
     }
 
     const_iterator find(const key_type& key) const
@@ -225,9 +227,16 @@ public:
 
     iterator begin()
     {
-        const auto bucketPos = firstBucket_;
-        const auto nodePos = bucketPos.begin();
-        return {bucketPos, nodePos};
+        Expects(hashTable_.size() > 0);
+
+        auto bucketPos = hashTable_.begin();
+        const auto lastBucketPos = std::prev(hashTable_.end());
+        while(bucketPos->empty() && (bucketPos != lastBucketPos))
+        {
+            ++bucketPos;
+        }
+
+        return {bucketPos, bucketPos->begin(), *this};
     }
 
     const_iterator begin() const
@@ -245,7 +254,7 @@ public:
         Expects(hashTable_.size() > 0);
         const auto bucketPos = std::prev(hashTable_.end());
         const auto nodePos = bucketPos->begin();
-        return Iterator{bucketPos, nodePos};
+        return Iterator{bucketPos, nodePos, *this};
     }
 
     const_iterator end() const
@@ -261,7 +270,7 @@ public:
     size_type bucket(const Key& key) const
     {
         Expects(bucket_count() > 0);
-        const auto hash = hasher(key);
+        const auto hash = hasher_(key);
         return (hash % bucket_count());
     }
 
@@ -303,7 +312,6 @@ private:
         Expects(hashTable_.empty());
 
         hashTable_.resize(bucketCount + 1);
-        firstBucket_ = std::prev(hashTable_.end());
         maxLoadFactor_ = DefaultMaxLoadFactor;
         size_ = 0;
         keyEqual_ = key_equal();
@@ -338,7 +346,7 @@ private:
     {
         const auto bucketIndex = bucket(key);
         Ensures(bucketIndex < bucket_count());
-        const auto bucketPos = std::next(hashTable_.begin(), bucketIndex);
+        const auto bucketPos = std::next(hashTable_.begin(), static_cast<difference_type>(bucketIndex));
         Ensures(bucketPos != hashTable_.end());
         return bucketPos;
     }
@@ -349,7 +357,6 @@ private:
     }
 
     HashTable hashTable_;
-    global_iterator firstBucket_;
     float maxLoadFactor_;
     size_type size_;
     key_equal keyEqual_;
@@ -360,8 +367,35 @@ template<typename Key,
          typename T,
          typename Hash,
          typename KeyEqual>
+bool operator==(const HashMap<Key, T, Hash, KeyEqual>& lhs,
+                const HashMap<Key, T, Hash, KeyEqual>& rhs)
+{
+    if(lhs.size() != rhs.size())
+    {
+        return false;
+    }
+
+    return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+
+template<typename Key,
+         typename T,
+         typename Hash,
+         typename KeyEqual>
+bool operator!=(const HashMap<Key, T, Hash, KeyEqual>& lhs,
+                const HashMap<Key, T, Hash, KeyEqual>& rhs)
+{
+    return !(lhs == rhs);
+}
+
+template<typename Key,
+         typename T,
+         typename Hash,
+         typename KeyEqual>
 class HashMap<Key, T, Hash, KeyEqual>::ConstIterator
 {
+    friend class HashMap;
+
 public:
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = typename HashMap::value_type;
@@ -369,11 +403,12 @@ public:
     using pointer = typename HashMap::const_pointer;
     using reference = typename HashMap::const_reference;
 
-    ConstIterator() = default;
-
-    ConstIterator(const_global_iterator bucketPos, const_local_iterator nodePos)
+    ConstIterator(const_global_iterator bucketPos,
+                  const_local_iterator nodePos,
+                  const HashMap& hashMap)
         :   bucketPos_(bucketPos)
         ,   nodePos_(nodePos)
+        ,   hashMap_(hashMap)
     {}
 
     reference operator*() const
@@ -390,6 +425,7 @@ public:
     {
         while(nodePos_ == bucketPos_->begin())
         {
+            Expects(bucketPos_ != hashMap_.hashTable_.begin());
             --bucketPos_;
             nodePos_ = bucketPos_->end();
         }
@@ -407,8 +443,13 @@ public:
 
     ConstIterator& operator++()
     {
+        Expects(bucketPos_ != std::prev(hashMap_.hashTable_.end()));
+        Expects(nodePos_ != bucketPos_->end());
+
         ++nodePos_;
-        while(nodePos_ == bucketPos_->end())
+        const auto lastBucketPos = std::prev(hashMap_.hashTable_.end());
+        while((nodePos_ == bucketPos_->end())
+            && (bucketPos_ != lastBucketPos))
         {
             ++bucketPos_;
             nodePos_ = bucketPos_->begin();
@@ -424,9 +465,20 @@ public:
         return result;
     }
 
+    bool operator==(const ConstIterator& rhs) const
+    {
+        return (bucketPos_ == rhs.bucketPos_ && nodePos_ == rhs.nodePos_);
+    }
+
+    bool operator!=(const ConstIterator& rhs) const
+    {
+        return !(*this == rhs);
+    }
+
 private:
     const_global_iterator bucketPos_;
     const_local_iterator nodePos_;
+    const HashMap& hashMap_;
 };
 
 template<typename Key,
@@ -436,12 +488,18 @@ template<typename Key,
 class HashMap<Key, T, Hash, KeyEqual>::Iterator
     :   public ConstIterator
 {
+    friend class HashMap;
+
 public:
     using reference = typename HashMap::reference;
     using pointer = typename HashMap::pointer;
+    using const_reference = typename HashMap::const_reference;
+    using const_pointer = typename HashMap::const_pointer;
 
-    Iterator(global_iterator bucketPos, local_iterator nodePos)
-        :   ConstIterator(bucketPos, nodePos)
+    Iterator(global_iterator bucketPos,
+             local_iterator nodePos,
+             const HashMap& hashMap)
+        :   ConstIterator(bucketPos, nodePos, hashMap)
     {}
 
     reference operator*()
@@ -449,9 +507,19 @@ public:
         return const_cast<reference>(ConstIterator::operator*());
     }
 
+    const_reference operator*() const
+    {
+        return ConstIterator::operator*();
+    }
+
     pointer operator->()
     {
         return std::addressof(operator*());
+    }
+
+    const_pointer operator->() const
+    {
+        return ConstIterator::operator->();
     }
 
     Iterator& operator--()
@@ -480,3 +548,5 @@ public:
         return result;
     }
 };
+
+} // namespace aisdi

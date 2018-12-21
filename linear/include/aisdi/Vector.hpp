@@ -281,7 +281,7 @@ public:
 	{
 		if(count < _size)
 		{
-			const auto first = std::next(begin(), count);
+			const auto first = std::next(begin(), static_cast<difference_type>(count));
 			const auto last = end();
 			erase(first, last);
 			return;
@@ -297,7 +297,7 @@ public:
 
 		_size = count;
 		const auto last = end();
-		const auto first = std::prev(last, count);
+		const auto first = std::prev(last, static_cast<difference_type>(count));
 		std::for_each(first, last,
 			[](auto& item)
 			{
@@ -374,7 +374,9 @@ private:
 		const auto afterLastMoved = std::move(last, end(), first);
 		util::destroy(afterLastMoved, end());
 
-		_size -= std::distance(first, last);
+		const auto count = std::distance(first, last);
+		Expects(count > 0);
+		_size -= static_cast<size_type>(count);
 
 		return first;
 	}

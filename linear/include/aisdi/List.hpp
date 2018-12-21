@@ -220,7 +220,10 @@ public:
 
 		prevNode->next = &_tail;
 		_tail.prev = prevNode;
-		_size = std::distance(first, last);
+
+		const auto size = std::distance(first, last);
+		Expects(size >= 0);
+		_size = static_cast<size_type>(size);
 	}
 
 	void
