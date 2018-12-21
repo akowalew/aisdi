@@ -59,8 +59,10 @@ private:
     using Bucket = aisdi::List<Node>;
     using HashTable = aisdi::Vector<Bucket>;
 
-    using global_iterator = typename HashTable::iterator;
-    using const_global_iterator = typename HashTable::const_iterator;
+    using BucketIterator = typename HashTable::iterator;
+    using ConstBucketIterator = typename HashTable::const_iterator;
+    using NodeIterator = typename Bucket::iterator;
+    using ConstNodeIterator = typename Bucket::const_iterator;
 
     constexpr static size_type DefaultBucketCount = 10;
     constexpr static float DefaultMaxLoadFactor = 1.0f;
@@ -71,8 +73,8 @@ public:
 
     using iterator = Iterator;
     using const_iterator = ConstIterator;
-    using local_iterator = typename Bucket::iterator;
-    using const_local_iterator = typename Bucket::const_iterator;
+    using local_iterator = BucketIterator;
+    using const_local_iterator = ConstBucketIterator;
     using node_type = Node;
 
     explicit HashMap(size_type bucketCount = DefaultBucketCount)
@@ -322,7 +324,7 @@ private:
         Ensures(size() == 0);
     }
 
-    std::pair<global_iterator, local_iterator> locate(const key_type& key)
+    std::pair<BucketIterator, NodeIterator> locate(const key_type& key)
     {
         const auto bucketPos = bucketPosAt(key);
         const auto bucketBegin = bucketPos->begin();
@@ -337,12 +339,12 @@ private:
         return std::make_pair(bucketPos, nodePos);
     }
 
-    std::pair<const_global_iterator, const_local_iterator> locate(const key_type& key) const
+    std::pair<ConstBucketIterator, ConstNodeIterator> locate(const key_type& key) const
     {
         return const_cast<HashMap&>(*this).locate(key);
     }
 
-    global_iterator bucketPosAt(const key_type& key)
+    BucketIterator bucketPosAt(const key_type& key)
     {
         const auto bucketIndex = bucket(key);
         Ensures(bucketIndex < bucket_count());
@@ -351,7 +353,7 @@ private:
         return bucketPos;
     }
 
-    const_global_iterator bucketPosAt(const key_type& key) const
+    ConstBucketIterator bucketPosAt(const key_type& key) const
     {
         return const_cast<HashMap&>(*this).bucketPosAt(key);
     }
@@ -403,8 +405,8 @@ public:
     using pointer = typename HashMap::const_pointer;
     using reference = typename HashMap::const_reference;
 
-    ConstIterator(const_global_iterator bucketPos,
-                  const_local_iterator nodePos,
+    ConstIterator(ConstBucketIterator bucketPos,
+                  ConstNodeIterator nodePos,
                   const HashMap& hashMap)
         :   bucketPos_(bucketPos)
         ,   nodePos_(nodePos)
@@ -476,8 +478,8 @@ public:
     }
 
 private:
-    const_global_iterator bucketPos_;
-    const_local_iterator nodePos_;
+    ConstBucketIterator bucketPos_;
+    ConstNodeIterator nodePos_;
     const HashMap& hashMap_;
 };
 
@@ -496,30 +498,20 @@ public:
     using const_reference = typename HashMap::const_reference;
     using const_pointer = typename HashMap::const_pointer;
 
-    Iterator(global_iterator bucketPos,
-             local_iterator nodePos,
+    Iterator(BucketIterator bucketPos,
+             NodeIterator nodePos,
              const HashMap& hashMap)
         :   ConstIterator(bucketPos, nodePos, hashMap)
     {}
 
-    reference operator*()
+    reference operator*() const
     {
         return const_cast<reference>(ConstIterator::operator*());
     }
 
-    const_reference operator*() const
-    {
-        return ConstIterator::operator*();
-    }
-
-    pointer operator->()
+    pointer operator->() const
     {
         return std::addressof(operator*());
-    }
-
-    const_pointer operator->() const
-    {
-        return ConstIterator::operator->();
     }
 
     Iterator& operator--()
