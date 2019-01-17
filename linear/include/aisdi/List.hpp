@@ -104,25 +104,25 @@ public:
 	iterator
 	begin()
 	{
-		return {_head.next};
+		return iterator{_head.next};
 	}
 
 	const_iterator
 	begin() const
 	{
-		return {_head.next};
+		return const_iterator{_head.next};
 	}
 
 	iterator
 	end()
 	{
-		return {&_tail};
+		return iterator{&_tail};
 	}
 
 	const_iterator
 	end() const
 	{
-		return {&_tail};
+		return const_iterator{&_tail};
 	}
 
 	const_iterator
@@ -271,7 +271,7 @@ public:
 		nextNode->prev = newNode;
 		++_size;
 
-		return {newNode};
+		return iterator{newNode};
 	}
 
 	T
@@ -315,7 +315,7 @@ public:
 	{
 		if(first == last)
 		{
-			return last;
+			return iterator{last};
 		}
 
 		auto node = const_cast<BasicNode*>(first._node);
@@ -339,7 +339,7 @@ public:
 
 		prevNode->next = lastNode;
 		lastNode->prev = prevNode;
-		return last;
+		return iterator{last};
 	}
 
 	std::size_t
@@ -543,6 +543,10 @@ class List<T>::Iterator
 {
 	friend List<T>;
 
+	explicit Iterator(const ConstIterator& other)
+		:	ConstIterator(other)
+	{}
+
 public:
 	using pointer = typename List::pointer;
 	using reference = typename List::reference;
@@ -585,12 +589,12 @@ public:
 
 	Iterator operator+(difference_type n) const
 	{
-		return ConstIterator::operator+(n);
+		return Iterator{ConstIterator::operator+(n)};
 	}
 
 	Iterator operator-(difference_type n) const
 	{
-		return ConstIterator::operator-(n);
+		return Iterator{ConstIterator::operator-(n)};
 	}
 
 	reference operator*() const
