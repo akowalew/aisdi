@@ -279,6 +279,11 @@ public:
         return 1;
     }
 
+    bool contains(const key_type& key)
+    {
+        return (find(key) != end());
+    }
+
     iterator find(const key_type& key)
     {
         const auto location = locate(key);
