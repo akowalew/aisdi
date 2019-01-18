@@ -1,5 +1,4 @@
-#ifndef AISDI_HASHMAP_HPP
-#define AISDI_HASHMAP_HPP
+#pragma once
 
 #include <algorithm>
 #include <iterator>
@@ -141,6 +140,48 @@ public:
         return *this;
     }
 
+    iterator begin()
+    {
+        Expects(hashTable_.size() > 0);
+
+        auto bucketPos = hashTable_.begin();
+        const auto lastBucketPos = std::prev(hashTable_.end());
+        while(bucketPos->empty() && (bucketPos != lastBucketPos))
+        {
+            ++bucketPos;
+        }
+
+        return {bucketPos, bucketPos->begin(), *this};
+    }
+
+    const_iterator begin() const
+    {
+        return const_cast<HashMap&>(*this).begin();
+    }
+
+    const_iterator cbegin() const
+    {
+        return begin();
+    }
+
+    iterator end()
+    {
+        Expects(hashTable_.size() > 0);
+        const auto bucketPos = std::prev(hashTable_.end());
+        const auto nodePos = bucketPos->begin();
+        return Iterator{bucketPos, nodePos, *this};
+    }
+
+    const_iterator end() const
+    {
+        return const_cast<HashMap&>(*this).end();
+    }
+
+    const_iterator cend() const
+    {
+        return end();
+    }
+
     T& at(const key_type& key)
     {
         auto pos = find(key);
@@ -159,22 +200,54 @@ public:
 
     T& operator[](const key_type& key)
     {
+        const auto result = insert({key, mapped_type{}});
+        const auto pos = result.first;
+        auto& mapped = pos->second;
+        return mapped;
+    }
+
+    std::pair<iterator, bool> insert(const value_type& value)
+    {
+        const auto& key = value.first;
         const auto location = locate(key);
         const auto& bucketPos = location.first; // Replace these two lines in C++17
         const auto& nodePos = location.second;
         const auto bucketEnd = bucketPos->end();
         if(nodePos != bucketEnd)
         {
-            return nodePos->mapped();
+            return {iterator{bucketPos, nodePos, *this}, false};
+        }
+
+        const auto& mapped = value.second;
+        const auto node = Node{{std::piecewise_construct,
+                                std::forward_as_tuple(key),
+                                std::forward_as_tuple(mapped)}};
+        const auto insertedNodePos = bucketPos->insert(bucketEnd, node);
+        ++size_;
+
+        return {iterator{bucketPos, insertedNodePos, *this}, true};
+    }
+
+    template<class M>
+    iterator insert_or_assign(const key_type& key, M&& obj)
+    {
+        const auto location = locate(key);
+        const auto& bucketPos = location.first; // Replace these two lines in C++17
+        const auto& nodePos = location.second;
+        const auto bucketEnd = bucketPos->end();
+        if(nodePos != bucketEnd)
+        {
+            nodePos->mapped() = std::move(obj);
+            return iterator{bucketPos, nodePos, *this};
         }
 
         const auto node = Node{{std::piecewise_construct,
                                 std::forward_as_tuple(key),
-                                std::forward_as_tuple(mapped_type{})}};
+                                std::forward_as_tuple(std::forward<M>(obj))}};
         const auto insertedNodePos = bucketPos->insert(bucketEnd, node);
         ++size_;
 
-        return insertedNodePos->mapped();
+        return iterator{bucketPos, insertedNodePos, *this};
     }
 
     iterator erase(const const_iterator& pos)
@@ -223,48 +296,6 @@ public:
     const_iterator find(const key_type& key) const
     {
         return const_cast<HashMap&>(*this).find(key);
-    }
-
-    iterator begin()
-    {
-        Expects(hashTable_.size() > 0);
-
-        auto bucketPos = hashTable_.begin();
-        const auto lastBucketPos = std::prev(hashTable_.end());
-        while(bucketPos->empty() && (bucketPos != lastBucketPos))
-        {
-            ++bucketPos;
-        }
-
-        return {bucketPos, bucketPos->begin(), *this};
-    }
-
-    const_iterator begin() const
-    {
-        return const_cast<HashMap&>(*this).begin();
-    }
-
-    const_iterator cbegin() const
-    {
-        return begin();
-    }
-
-    iterator end()
-    {
-        Expects(hashTable_.size() > 0);
-        const auto bucketPos = std::prev(hashTable_.end());
-        const auto nodePos = bucketPos->begin();
-        return Iterator{bucketPos, nodePos, *this};
-    }
-
-    const_iterator end() const
-    {
-        return const_cast<HashMap&>(*this).end();
-    }
-
-    const_iterator cend() const
-    {
-        return end();
     }
 
     size_type bucket(const Key& key) const
@@ -541,5 +572,3 @@ public:
 };
 
 } // namespace aisdi
-
-#endif

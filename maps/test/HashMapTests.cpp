@@ -256,6 +256,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenAddingItem_ThenItIsNoLongerEmpty
   BOOST_CHECK(!map.empty());
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenInsertingOrAssigningItem_ThenItIsNoLongerEmpty,
+                              K,
+                              TestedKeyTypes)
+{
+  Map<K> map;
+
+  map.insert_or_assign(K{}, std::string{});
+
+  BOOST_CHECK(!map.empty());
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenGettingIterators_ThenBeginEqualsEnd,
                               K,
                               TestedKeyTypes)
@@ -503,6 +514,49 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenAddingItem_ThenItemIsInMap,
   thenMapContainsItems(map, { { 42, "Alice" } });
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenInsertingOrAssigning_ThenItemIsInMap,
+                              K,
+                              TestedKeyTypes)
+{
+  Map<K> map;
+
+  auto it = map.insert_or_assign(42, "Alice");
+  BOOST_CHECK(it->second == "Alice");
+  thenMapContainsItems(map, { { 42, "Alice" } });
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenMap_WhenInsertingOrAssigning_ThenItsIteratorIsReturned,
+                              K,
+                              TestedKeyTypes)
+{
+  Map<K> map;
+
+  auto it = map.insert_or_assign(42, "Alice");
+  BOOST_CHECK(it == map.find(42));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenMap_WhenInsertingOrAssigningItemWithExistingKey_ThenItemIsAssigned,
+                              K,
+                              TestedKeyTypes)
+{
+  Map<K> map = { { 42, "Chuck" } };
+
+  map.insert_or_assign(42, "Alice");
+
+  thenMapContainsItems(map, { { 42, "Alice" } });
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(GivenMap_WhenInsertingOrAssigningItemWithExistingKey_ThenItsIteratorIsReturned,
+                              K,
+                              TestedKeyTypes)
+{
+  Map<K> map = { { 42, "Chuck" } };
+
+  const auto it1 = map.find(42);
+  const auto it2 = map.insert_or_assign(42, "Alice");
+  BOOST_CHECK(it1 == it2);
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNonEmptyMap_WhenChangingItem_ThenNewValueIsInMap,
                               K,
                               TestedKeyTypes)
@@ -510,8 +564,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNonEmptyMap_WhenChangingItem_ThenNewValueIsIn
   Map<K> map = { { 42, "Chuck" }, { 27, "Bob" } };
 
   map[42] = "Alice";
-
   thenMapContainsItems(map, { { 42, "Alice" }, { 27, "Bob" } });
+
+  map.insert_or_assign(42, "Richard");
+  thenMapContainsItems(map, { { 42, "Richard" }, { 27, "Bob" } });
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(GivenEmptyMap_WhenCreatingCopy_ThenBothMapsAreEmpty,

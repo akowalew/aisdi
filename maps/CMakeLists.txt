@@ -23,6 +23,7 @@ target_include_directories(aisdi_maps
 	INTERFACE
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 		${CMAKE_SOURCE_DIR}/linear/include
+		${CMAKE_SOURCE_DIR}/submodules/gsl/include
 )
 
 target_link_libraries(aisdi_maps
