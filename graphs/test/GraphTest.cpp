@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(GivenGraph_WhenListInitialized_ThenItShouldHaveTheseItems)
 	using Edge = Graph::Edge;
 
 	const auto edges_list = {Edge{0, 1}, Edge{1, 2}, Edge{2, 0}};
-	const auto graph = aisdi::Graph{edges_list};
+	const auto graph = aisdi::Graph{edges_list.begin(), edges_list.end()};
 
 	BOOST_CHECK(graph.has_edge(0, 1));
 	BOOST_CHECK(graph.has_edge(1, 2));

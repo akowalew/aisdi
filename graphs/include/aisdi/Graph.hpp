@@ -8,12 +8,19 @@
 #include "aisdi/List.hpp"
 #include "aisdi/Vector.hpp"
 
+
+
+//std::vector<Vertex> wierzcholki;
+
+//std::vector<std::set<int>> macierz_incydencji;
+
 namespace aisdi {
 
 class Graph
 {
 public:
 	using VertexDescriptor = unsigned int;
+	using EdgeDescriptor = std::pair<VertexDescriptor, VertexDescriptor>;
 
 	struct Vertex
 	{
@@ -45,25 +52,22 @@ public:
 		}
 	};
 
-	using Vertices = aisdi::HashMap<VertexDescriptor, Vertex>;
-	using VertexIterator = Vertices::const_iterator;
-
-	struct VerticesRange
-	{
-		VertexIterator first;
-		VertexIterator last;
-	};
-
-	using EdgeDescriptor = std::pair<VertexDescriptor, VertexDescriptor>;
-
 	struct Edge
 	{
 		VertexDescriptor u;
 		VertexDescriptor v;
 	};
 
-	using Edges = aisdi::Vector<Edge>;
+	using Vertices = aisdi::HashMap<VertexDescriptor, Vertex>;
+	using VertexIterator = Vertices::const_iterator;
+	using Edges = aisdi::List<Edge>;
 	using EdgeIterator = Edges::const_iterator;
+
+	struct VerticesRange
+	{
+		VertexIterator first;
+		VertexIterator last;
+	};
 
 	struct EdgesRange
 	{
@@ -140,19 +144,6 @@ public:
 		return edges_.insert(edges_end(), edge);
 	}
 
-	EdgeIterator add_edge(VertexIterator source_pos, VertexDescriptor v)
-	{
-		Expects(source_pos != vertices_end());
-		const auto u = source_pos->first;
-		auto& source = const_cast<Vertex&>(source_pos->second);
-		source.add_adjacent(u);
-
-		auto& target = vertices_[v];
-		target.add_adjacent(u);
-
-		return edges_.insert(edges_end(), Edge{u, v});
-	}
-
 	EdgeIterator find_edge(VertexDescriptor u, VertexDescriptor v) const
 	{
 		return std::find_if(edges_begin(), edges_end(),
@@ -226,11 +217,10 @@ public:
 	Vertex pop_vertex(VertexDescriptor u)
 	{
 		const auto pos = find_vertex(u);
-		assert(pos != vertices_end());
+		Expects(pos != vertices_end());
 
 		Vertex result = std::move(pos->second);
 		erase_vertex(pos);
-
 		return result;
 	}
 
@@ -268,7 +258,7 @@ public:
 		{
 			auto& target = get_vertex_(v);
 			target.remove_adjacent(u);
-			erase_edge_(find_edge(u, v));
+			remove_edge_(u, v);
 		}
 
 		source.clear_adjacents();
@@ -285,10 +275,15 @@ private:
 		return const_cast<Vertex&>(get_vertex(u));
 	}
 
-	EdgeIterator erase_edge_(const EdgeIterator& edge_pos)
+	void remove_edge_(VertexDescriptor v, VertexDescriptor u)
 	{
-		Expects(edge_pos != edges_end());
-		return edges_.erase(edge_pos);
+		const auto pos = find_edge(v, u);
+		if(pos == edges_end())
+		{
+			return;
+		}
+
+		edges_.erase(pos);
 	}
 
 	Edges edges_;

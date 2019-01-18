@@ -7,7 +7,7 @@ namespace aisdi {
 
 namespace {
 
-struct Dummy {};
+struct DummyType {};
 
 } //
 
@@ -15,39 +15,38 @@ inline std::size_t connected_components_count(const Graph& graph)
 {
 	std::size_t count = 0;
 	aisdi::Vector<Graph::VertexDescriptor> stack;
-	aisdi::HashMap<Graph::VertexDescriptor, Dummy> visited;
+	aisdi::HashMap<Graph::VertexDescriptor, DummyType> visited;
 
 	const auto vertices = graph.vertices();
-	std::for_each(vertices.first, vertices.last,
-		[&](const auto& pos)
+	for(auto vertex_pos = vertices.first; vertex_pos != vertices.last; ++vertex_pos)
+	{
+		const auto u = vertex_pos->first;
+		if(visited.contains(u))
 		{
-			const auto u = pos.first;
-			if(visited.contains(u))
-			{
-				return;
-			}
+			continue;
+		}
 
-			visited[u] = {};
-			stack.append(u);
+		visited[u] = {};
+		stack.append(u);
 
-			while(!stack.empty())
+		while(!stack.empty())
+		{
+			const auto v = stack.popFront();
+			const auto& target = graph.get_vertex(v);
+			for(const auto k : target.adjacents)
 			{
-				const auto v = stack.popFront();
-				const auto& target = graph.get_vertex(v);
-				for(const auto k : target.adjacents)
+				if(visited.contains(k))
 				{
-					if(visited.contains(k))
-					{
-						continue;
-					}
-
-					visited[k] = {};
-					stack.append(k);
+					continue;
 				}
-			}
 
-			++count;
-		});
+				visited[k] = {};
+				stack.append(k);
+			}
+		}
+
+		++count;
+	};
 
 	return count;
 }

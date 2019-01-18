@@ -6,9 +6,14 @@ option(AISDI_GRAPHS_BUILD_TESTS "Build tests for project" ON)
 add_library(aisdi_graphs
 	src/Graph.cpp include/aisdi/Graph.hpp
 	src/graph_io.cpp include/aisdi/graph_io.hpp
-	src/distant_bridges.cpp include/aisdi/distant_bridges.hpp
+	include/aisdi/distant_bridges.hpp
 	src/connected_components_count.cpp include/aisdi/connected_components_count.hpp
 )
+
+add_executable(distant_bridges
+	src/distant_bridges.cpp)
+target_link_libraries(distant_bridges
+	aisdi_graphs)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
 	message(STATUS "Adding GSL_UNENFORCED_ON_CONTRACT_VIOLATION definition...")
