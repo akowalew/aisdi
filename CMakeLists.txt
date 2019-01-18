@@ -3,6 +3,7 @@ project(aisdi CXX)
 
 option(AISDI_BUILD_LINEAR "Build 'Linear' subproject" ON)
 option(AISDI_BUILD_MAPS "Build 'Maps' subproject" ON)
+option(AISDI_BUILD_GRAPHS "Build 'Graphs' subproject" ON)
 
 enable_testing()
 
@@ -14,4 +15,8 @@ endif()
 
 if(AISDI_BUILD_MAPS)
 	add_subdirectory(maps)
+endif()
+
+if(AISDI_BUILD_GRAPHS)
+	add_subdirectory(graphs)
 endif()
