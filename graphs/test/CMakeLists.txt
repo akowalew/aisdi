@@ -4,6 +4,7 @@ add_executable(aisdi_graphs_tests
 	tests_main.cpp
 
 	GraphTest.cpp
+	graph_io_Test.cpp
 )
 
 target_include_directories(aisdi_graphs_tests
@@ -36,3 +37,4 @@ target_compile_options(aisdi_graphs_tests
 )
 
 add_test(GraphTest aisdi_graphs_tests --run_test=GraphTest)
+add_test(graph_io_Test aisdi_graphs_tests --run_test=graph_io_Test)

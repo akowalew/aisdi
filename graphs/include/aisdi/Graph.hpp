@@ -54,6 +54,8 @@ public:
 		VertexIterator last;
 	};
 
+	using EdgeDescriptor = std::pair<VertexDescriptor, VertexDescriptor>;
+
 	struct Edge
 	{
 		VertexDescriptor u;
@@ -121,6 +123,13 @@ public:
 
 	EdgeIterator add_edge(VertexDescriptor u, VertexDescriptor v)
 	{
+		return add_edge(Edge{u, v});
+	}
+
+	EdgeIterator add_edge(EdgeDescriptor e)
+	{
+		const auto u = e.first;
+		const auto v = e.second;
 		return add_edge(Edge{u, v});
 	}
 
@@ -262,12 +271,12 @@ private:
 	Vertices vertices_;
 };
 
-bool operator==(const Graph::Edge& lhs, const Graph::Edge& rhs)
+inline bool operator==(const Graph::Edge& lhs, const Graph::Edge& rhs)
 {
 	return (lhs.u == rhs.u) && (lhs.v == rhs.v);
 }
 
-bool operator!=(const Graph::Edge& lhs, const Graph::Edge& rhs)
+inline bool operator!=(const Graph::Edge& lhs, const Graph::Edge& rhs)
 {
 	return !(lhs == rhs);
 }

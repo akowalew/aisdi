@@ -2,8 +2,6 @@
 
 #include <algorithm>
 
-#include <boost/mpl/list.hpp>
-
 #include "aisdi/Graph.hpp"
 
 namespace {
@@ -300,6 +298,6 @@ BOOST_AUTO_TEST_CASE(GivenGraph_WhenRemovingVertexWithEdges_ThenOnlyThemShouldBe
 	BOOST_CHECK(graph.has_vertex(2));
 }
 
-BOOST_AUTO_TEST_SUITE_END() // HashMapTests, Fixture
+BOOST_AUTO_TEST_SUITE_END() // GraphTest
 
 } // namespace

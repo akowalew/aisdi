@@ -3,64 +3,49 @@ project(aisdi_graphs CXX)
 
 option(AISDI_GRAPHS_BUILD_TESTS "Build tests for project" ON)
 
-add_library(aisdi_graphs INTERFACE)
+add_library(aisdi_graphs
+	src/Graph.cpp include/aisdi/Graph.hpp
+	src/graph_io.cpp include/aisdi/graph_io.hpp
+)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
 	message(STATUS "Adding GSL_UNENFORCED_ON_CONTRACT_VIOLATION definition...")
 	target_compile_definitions(aisdi_graphs
-		INTERFACE
+		PUBLIC
 			GSL_UNENFORCED_ON_CONTRACT_VIOLATION
 	)
 elseif(CMAKE_BUILD_TYPE )
 	message(STATUS "Adding GSL_THROW_ON_CONTRACT_VIOLATION definition...")
 	target_compile_definitions(aisdi_graphs
-		INTERFACE
+		PUBLIC
 			GSL_THROW_ON_CONTRACT_VIOLATION
 	)
 endif()
 
 target_include_directories(aisdi_graphs
-	INTERFACE
+	PUBLIC
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 		${CMAKE_SOURCE_DIR}/../maps/include
 )
 
 target_link_libraries(aisdi_graphs
-	INTERFACE
+	PUBLIC
 		GSL
 		aisdi_maps
 )
 
 if(MSVC)
 	target_compile_options(aisdi_graphs
-		INTERFACE
+		PUBLIC
 			/std:c++14
-	)
-else(MSVC)
-	target_compile_options(aisdi_graphs
-		INTERFACE
-			-std=c++14
-	)
-endif(MSVC)
-
-# Compile library to check for basic compiler errors
-add_library(aisdi_graphs_compiled
-	src/Graph.cpp
-)
-
-target_link_libraries(aisdi_graphs_compiled
-	PRIVATE
-		aisdi_graphs
-)
-
-if(MSVC)
-	target_compile_options(aisdi_graphs_compiled
-		INTERFACE
+		PRIVATE
 			/W4 /WX
 	)
 else(MSVC)
-	target_compile_options(aisdi_graphs_compiled
-		INTERFACE
+	target_compile_options(aisdi_graphs
+		PUBLIC
+			-std=c++14
+		PRIVATE
 			-Wall
 			-Wextra
 			-pedantic
