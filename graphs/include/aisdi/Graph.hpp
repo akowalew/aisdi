@@ -140,6 +140,19 @@ public:
 		return edges_.insert(edges_end(), edge);
 	}
 
+	EdgeIterator add_edge(VertexIterator source_pos, VertexDescriptor v)
+	{
+		Expects(source_pos != vertices_end());
+		const auto u = source_pos->first;
+		auto& source = const_cast<Vertex&>(source_pos->second);
+		source.add_adjacent(u);
+
+		auto& target = vertices_[v];
+		target.add_adjacent(u);
+
+		return edges_.insert(edges_end(), Edge{u, v});
+	}
+
 	EdgeIterator find_edge(VertexDescriptor u, VertexDescriptor v) const
 	{
 		return std::find_if(edges_begin(), edges_end(),
@@ -208,6 +221,17 @@ public:
 		const auto& pos = result.first;
 		const auto& inserted = result.second;
 		return {pos, inserted};
+	}
+
+	Vertex pop_vertex(VertexDescriptor u)
+	{
+		const auto pos = find_vertex(u);
+		assert(pos != vertices_end());
+
+		Vertex result = std::move(pos->second);
+		erase_vertex(pos);
+
+		return result;
 	}
 
 	bool remove_vertex(VertexDescriptor u)

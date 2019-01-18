@@ -6,6 +6,8 @@ option(AISDI_GRAPHS_BUILD_TESTS "Build tests for project" ON)
 add_library(aisdi_graphs
 	src/Graph.cpp include/aisdi/Graph.hpp
 	src/graph_io.cpp include/aisdi/graph_io.hpp
+	src/distant_bridges.cpp include/aisdi/distant_bridges.hpp
+	src/connected_components_count.cpp include/aisdi/connected_components_count.hpp
 )
 
 if(CMAKE_BUILD_TYPE MATCHES Release)

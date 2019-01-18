@@ -5,6 +5,8 @@ add_executable(aisdi_graphs_tests
 
 	GraphTest.cpp
 	graph_io_Test.cpp
+	distant_bridges_Test.cpp
+	connected_components_count_Test.cpp
 )
 
 target_include_directories(aisdi_graphs_tests
@@ -38,3 +40,5 @@ target_compile_options(aisdi_graphs_tests
 
 add_test(GraphTest aisdi_graphs_tests --run_test=GraphTest)
 add_test(graph_io_Test aisdi_graphs_tests --run_test=graph_io_Test)
+add_test(distant_bridges_Test aisdi_graphs_tests --run_test=distant_bridges_Test)
+add_test(connected_components_count_Test aisdi_graphs_tests --run_test=connected_components_count_Test)
