@@ -599,3 +599,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	BOOST_CHECK(afterLastRemoved == vector.end());
 	BOOST_CHECK(vector.empty());
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenEmptyContainer_WhenClearing_ThenNothingHappens,
+	T, TestTypes)
+{
+	auto vector = aisdi::Vector<T>{};
+	vector.clear();
+	BOOST_CHECK(vector == aisdi::Vector<T>{});
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	GivenContainer_WhenClearing_ThenAllItemsShouldBeErased,
+	T, TestTypes)
+{
+	auto il = {T{1}, T{2}, T{3}};
+	auto vector = aisdi::Vector<T>{il};
+	BOOST_REQUIRE(vector == aisdi::Vector<T>{il});
+
+	vector.clear();
+	BOOST_CHECK(vector == aisdi::Vector<T>{});
+}
