@@ -69,7 +69,7 @@ public:
 
         Ensures(size() == ilist.size());
         Ensures(std::all_of(ilist.begin(), ilist.end(),
-            [this](const auto& v) { return contains(v.first); }));
+            [this](const auto& v) { return this->contains(v.first); }));
     }
 
     TreeMap& operator=(const TreeMap& other)

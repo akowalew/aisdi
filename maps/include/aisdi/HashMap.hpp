@@ -89,7 +89,7 @@ public:
                       {
                           const auto& key = value.first;
                           const auto& mapped = value.second;
-                          operator[](key) = mapped;
+                          this->operator[](key) = mapped;
                       });
     }
 
