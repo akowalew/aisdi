@@ -342,6 +342,22 @@ public:
 		return iterator{last};
 	}
 
+	void remove(const T& value)
+	{
+		auto first = begin();
+		const auto last = end();
+		for(;;)
+		{
+			const auto pos = std::find(first, last, value);
+			if(pos == last)
+			{
+				break;
+			}
+
+			first = erase(pos);
+		}
+	}
+
 	std::size_t
 	size() const noexcept
 	{

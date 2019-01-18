@@ -266,6 +266,12 @@ public:
 		return result;
 	}
 
+	void clear()
+	{
+		util::destroy(begin(), end());
+		_size = 0;
+	}
+
 	iterator
 	erase(const_iterator pos)
 	{
